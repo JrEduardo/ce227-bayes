@@ -1,0 +1,453 @@
+---
+title: Inferência Bayesiana - Análise de experimento com via inferência clássica e Bayesiana
+author: Eduardo E. R. Junior - DEST/UFPR
+date: 22 de junho de 2016
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    css: ../_style.css
+    highlight: pygments
+    code_folding: show
+---
+
+```{r, include = FALSE}
+
+source("../_defs.R")
+
+```
+
+# Definição do problema #
+
+```{r}
+
+library(cmpreg)
+data(nematodes)
+str(nematodes)
+## help(nematodes, h = "html")
+
+```
+
+```{r}
+
+##======================================================================
+## Análise de dados de nematóides
+xyplot(nema ~ off, groups = cult,
+       type = c("g", "p"),
+       data = nematodes,
+       auto.key = list(
+           title = "Linhagens",
+           cex.title = 1,
+           corner = c(0.9, 0.9)
+       ))
+
+```
+
+Duas estruturas para modelagem serão consideradas
+* Modelar somente o efeito aleatório das linhagens,
+* Modelar somente o efeito fixo de `off` e aleatório das linhagens.
+
+# Modelos em competição #
+
+1. Modelo misto Poisson (ajustado pela maximização da verossimilhança)
+2. Modelo misto COM-Poisson (ajustado pela maximização da
+   verossimilhança)
+3. Modelo misto Poisson (sob o paradigma Bayesiano)
+     * INLA (_Integrated Nested Laplace Aproximation_)
+     * Amostragem MCMC (usando o `jags`)
+4. Modelo misto Gamma-Count (sob o paradigma Bayesiano - INLA)
+
+## Abordagem de Máxima Verossimilhança ##
+
+### Modelo misto Poisson ###
+
+```{r fitmle, cache=FALSE}
+
+##----------------------------------------------------------------------
+## Com a Poisson
+library(lme4)
+mle0 <- glmer(nema ~ (1|cult), data = nematodes,
+              family = poisson)
+mle1 <- glmer(nema ~ log(off) + (1|cult), data = nematodes,
+              family = poisson)
+
+```
+
+```{r}
+
+##-------------------------------------------
+## Estimativas dos parametros
+## Para o modelo sem efeito fixo
+tmle0 <- rbind(sigma = c(sqrt(VarCorr(mle0)$cult), NA, NA),
+               summary(mle0)$coef[, -4])
+rownames(tmle0)[2] <- c("(Intercept)")
+tmle0
+
+## Para o modelo com efeito fixo
+tmle1 <- rbind(sigma = c(sqrt(VarCorr(mle1)$cult), NA, NA),
+               summary(mle1)$coef[, -4])
+tmle1
+
+```
+
+```{r ranefmle}
+
+## Predição dos efeitos aleatórios
+ranef.mle0 <- data.frame(ef = ranef(mle0)$cult[, 1], m = "mle0")
+ranef.mle1 <- data.frame(ef = ranef(mle1)$cult[, 1], m = "mle1")
+ranef.mle <- rbind(ranef.mle0, ranef.mle1)
+
+densityplot(~ef, groups = m,
+            data = ranef.mle,
+            axis = axis.grid,
+            auto.key = TRUE)
+
+```
+
+### Modelo misto COM-Poisson ###
+
+```{r fitcmp, cache=FALSE}
+
+##----------------------------------------------------------------------
+## Com a COM-Poisson
+## library(cmpreg)
+## cmp0 <- cmp(nema ~ (1|cult), data = nematodes, sumto = 50)
+## cmp1 <- cmp(nema ~ log(off) + (1|cult), data = nematodes,
+##             sumto = 50)
+load("mixedcmp_models.rda")
+
+```
+
+```{r}
+
+## Estimativas dos parametros
+## Para o modelo sem efeito fixo
+tcmp0 <- rbind(sigma = c(exp(coef(cmp0)[2]), NA, NA),
+               summary(cmp0)@coef[-2, -4])
+colnames(tcmp0) <- colnames(summary(cmp0)@coef[, -4])
+tcmp0
+
+## Para o modelo com efeito fixo
+tcmp1 <- rbind(sigma = c(exp(coef(cmp1)[2]), NA, NA),
+               summary(cmp1)@coef[-2, -4])
+colnames(tcmp1) <- colnames(summary(cmp1)@coef[, -4])
+tcmp1
+
+```
+
+```{r ranefcmp, cache=FALSE}
+
+## Predição dos efeitos aleatórios
+ranef.cmp0 <- data.frame(ef = mixedcmp.ranef(cmp0), m = "cmp0")
+ranef.cmp1 <- data.frame(ef = mixedcmp.ranef(cmp1), m = "cmp1")
+ranef.cmp <- rbind(ranef.cmp0, ranef.cmp1)
+
+densityplot(~ef, groups = m,
+            data = ranef.cmp,
+            axis = axis.grid,
+            auto.key = TRUE)
+
+```
+
+## Abordagem Bayesiana com INLA ##
+
+### Modelo misto Poisson ###
+
+```{r fitinla, cache=FALSE}
+
+##----------------------------------------------------------------------
+## Com a poisson
+library(INLA)
+inla0 <- inla(nema ~ 1 + f(cult, model = "iid"),
+              data = nematodes, family = "poisson")
+inla1 <- inla(nema ~ log(off) + f(cult, model = "iid"),
+              data = nematodes, family = "poisson")
+
+```
+
+```{r}
+
+## Estimativas dos parametros
+## Para o modelo sem efeito fixo
+tinla0 <- rbind(c(sqrt(1/summary(inla0)$hyperpar[1]), rep(NA, 6)),
+                summary(inla0)$fixed)
+colnames(tinla0) <- colnames(summary(inla0)$fixed)
+rownames(tinla0)[1] <- "sigma"
+tinla0
+
+## Para o modelo com efeito de off
+tinla1 <- rbind(c(sqrt(1/summary(inla1)$hyperpar[1]), rep(NA, 6)),
+                summary(inla1)$fixed)
+colnames(tinla1) <- colnames(summary(inla1)$fixed)
+rownames(tinla1)[1] <- "sigma"
+tinla1
+
+```
+
+```{r ranefinla}
+
+## Predição para os efeitos aleatórios
+ranef.inla0 <- data.frame(ef = inla0$summary.random$cult$mean,
+                          m = "inla0")
+ranef.inla1 <- data.frame(ef = inla1$summary.random$cult$mean,
+                          m = "inla1")
+ranef.inla <- rbind(ranef.inla0, ranef.inla1)
+
+densityplot(~ef, groups = m,
+            data = ranef.inla,
+            axis = axis.grid,
+            auto.key = TRUE)
+
+```
+
+### Modelo misto Gamma-Count ###
+
+```{r fitinlag, cache=FALSE}
+
+##----------------------------------------------------------------------
+## Com a Gamma-Count
+inlag0 <- inla(nema ~ 1 + f(cult, model = "iid"),
+               data = nematodes, family = "gammacount")
+inlag1 <- inla(nema ~ log(off) + f(cult, model = "iid"),
+               data = nematodes, family = "gammacount")
+
+```
+
+```{r}
+
+## Estimativas dos parametros
+## Para o modelo sem efeito fixo
+tinlag0 <- rbind(c(sqrt(1/summary(inlag0)$hyperpar[2, 1]), rep(NA, 6)),
+                 c(summary(inlag0)$hyperpar[2, 1], rep(NA, 6)),
+                 summary(inlag0)$fixed)
+colnames(tinlag0) <- colnames(summary(inlag0)$fixed)
+rownames(tinlag0) <- c("sigma", "alpha", "(Intercept)")
+tinlag0
+
+## Para o modelo com efeito de off
+tinlag1 <- rbind(c(sqrt(1/summary(inlag1)$hyperpar[2, 1]), rep(NA, 6)),
+                 c(summary(inlag1)$hyperpar[2, 1], rep(NA, 6)),
+                 summary(inlag1)$fixed)
+colnames(tinlag1) <- colnames(summary(inlag1)$fixed)
+rownames(tinlag1) <- c("sigma", "alpha", "(Intercept)", "log(off)")
+tinlag1
+
+```
+
+```{r ranefinlag, cache=FALSE}
+
+## Predição para os efeitos aleatórios
+ranef.inlag0 <- data.frame(ef = inlag0$summary.random$cult$mean,
+                          m = "inlag0")
+ranef.inlag1 <- data.frame(ef = inlag1$summary.random$cult$mean,
+                          m = "inlag1")
+ranef.inlag <- rbind(ranef.inlag0, ranef.inlag1)
+
+densityplot(~ef, groups = m,
+            data = ranef.inlag,
+            axis = axis.grid,
+            auto.key = TRUE)
+
+```
+
+## Abordagem Bayesiana por simulação ##
+
+### Modelo misto Poisson ###
+
+Abaixo define-se o modelo conforme sintaxe do JAGS
+
+```{r}
+
+##======================================================================
+## Por amostragem MCMC
+library(rjags)
+
+##-------------------------------------------
+## Com a Poisson
+cat(
+" model {
+    ## Log-verossimilhanca
+    for (i in 1:m) {
+      u[i] ~ dnorm(0, tau.e)
+    }
+    for (j in 1:n) {
+      log(mu[j]) <- b0 + b1 * cov[j] + u[ind[j]]
+      y[j] ~ dpois(mu[j])
+    }
+    ## Prioris
+    b0 ~ dnorm(0, 0.0001)
+    b1 ~ dnorm(0, 0.0001)
+    tau.e ~ dgamma(0.001, 0.001)
+    sigma <- sqrt(1/tau.e)
+}
+", file = "poisRE.modelo")
+
+
+```
+
+```{r fitmcmc0, cache=FALSE, results="hide"}
+
+##-------------------------------------------
+## Modelo sem efeito de covariavel
+data0 <- with(
+    nematodes,
+    list("y" = nema,
+         "cov" = rep(0, length(nema)),
+         "n" = length(nema),
+         "m" = length(unique(cult)),
+         "ind" = as.numeric(cult))
+)
+
+jagsmodel0 <- jags.model(
+    "poisRE.modelo",
+    data = data0,
+    n.chains = 3,
+    n.adapt = 1000
+)
+
+amostra0 <- coda.samples(
+    jagsmodel0, c("b0", "sigma"),
+    n.iter = 10000, thin = 10,
+    n.chains = 3,
+    n.adapt = 1000)
+
+```
+
+Avaliação das cadeias
+
+```{r}
+
+xyplot(amostra0, axis = axis.grid, aspect = "fill")
+densityplot(amostra0, axis = axis.grid, aspect = "fill")
+acfplot(amostra0, type = "h", axis = axis.grid, aspect = "fill")
+
+```
+
+Predição dos efeitos
+
+```{r mcmc0, cache=FALSE, results="hide"}
+
+##-------------------------------------------
+## Predição dos efeitos fixos e aleatórios
+amostra0 <- coda.samples(
+    jagsmodel0, c("b0", "sigma", "u"),
+    n.iter = 10000, thin = 10,
+    n.chains = 3,
+    n.adapt = 1000)
+
+amostra0 <- as.mcmc(do.call(rbind, amostra0))
+
+```
+
+```{r}
+
+##-------------------------------------------
+## Resumos da posteriori
+resumo0 <- summary(amostra0)$statistics
+ranef.jags0 <- data.frame(ef = resumo0[-(1:3), 1], m = "jags0")
+
+resumo0[1:3, ]
+HPDinterval(amostra0)[1:3, ]
+
+```
+
+```{r fitmcmc1, cache=FALSE, results="hide"}
+
+##-------------------------------------------
+## Modelo com efeito de covariavel
+data1 <- with(
+    nematodes,
+    list("y" = nema,
+         "cov" = log(off),
+         "n" = length(nema),
+         "m" = length(unique(cult)),
+         "ind" = as.numeric(cult))
+)
+
+jagsmodel1 <- jags.model(
+    "poisRE.modelo",
+    data = data1,
+    n.chains = 3,
+    n.adapt = 1000
+)
+
+amostra1 <- coda.samples(
+    jagsmodel1, c("b0", "b1", "sigma"),
+    n.iter = 15000, thin = 15,
+    n.chains = 3,
+    n.adapt = 1000)
+
+```
+
+```{r}
+
+##-------------------------------------------
+## Avaliação das cadeias
+xyplot(amostra1, axis = axis.grid, aspect = "fill")
+densityplot(amostra1, axis = axis.grid, aspect = "fill")
+acfplot(amostra1, type = "h", axis = axis.grid, aspect = "fill")
+
+```
+
+```{r mcmc1, results="hide"}
+
+##-------------------------------------------
+## Predição dos efeitos fixos e aleatórios
+amostra1 <- coda.samples(
+    jagsmodel1, c("b0", "b1", "sigma", "u"),
+    n.iter = 15000, thin = 15,
+    n.chains = 3,
+    n.adapt = 1000)
+
+amostra1 <- as.mcmc(do.call(rbind, amostra1))
+
+```
+
+```{r}
+
+##-------------------------------------------
+## Resumos da posteriori
+resumo1 <- summary(amostra1)$statistics
+ranef.jags1 <- data.frame(ef = resumo1[-(1:3), 1], m = "jags1")
+
+resumo1[1:3, ]
+HPDinterval(amostra1)[1:3, ]
+
+```
+
+```{r}
+
+##-------------------------------------------
+## Empilhando os efeitos aleatórios
+ranef.jags <- rbind(ranef.jags0, ranef.jags1)
+
+densityplot(~ef, groups = m,
+            data = ranef.jags,
+            axis = axis.grid,
+            auto.key = TRUE)
+
+```
+
+## Comparação ##
+
+```{r}
+
+tmle0
+tcmp0
+tinla0
+tinlag0
+resumo0
+
+```
+
+```{r}
+
+tmle1
+tcmp1
+tinla1
+tinlag1
+resumo1
+
+```
