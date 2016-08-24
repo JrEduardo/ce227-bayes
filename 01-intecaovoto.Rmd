@@ -8,14 +8,14 @@ output:
     toc_float:
       collapsed: false
       smooth_scroll: false
-    css: ../_style.css
+    css: _style.css
     highlight: pygments
     code_folding: show
 ---
 
 ```{r, include = FALSE}
 
-source("../_defs.R")
+source("_defs.R")
 
 ```
 

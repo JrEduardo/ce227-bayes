@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Eduardo E. R. Junior" />
+
+
+<title>FBST - Full Bayesian Significance Test Ideias iniciais</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/yeti.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+div.sourceCode {
+  overflow-x: visible;
+}
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="_style.css" type="text/css" />
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 45px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+
+.section h2 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+.section h3 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+.section h4 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+.section h5 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+.section h6 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = false;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.9em;
+  padding-left: 5px;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+  padding-left: 10px;
+}
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Atividades
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="01-intecaovoto.html">Exemplo intenção de voto</a>
+    </li>
+    <li>
+      <a href="02-pvalor.html">Princípio da Verossimilhança</a>
+    </li>
+    <li>
+      <a href="03-gamma-jeffrey.pdf">Inferência sobre o parâmetro de forma da Gamma</a>
+    </li>
+    <li>
+      <a href="04-fbst.html">FBST - Full Bayesian Significance Test</a>
+    </li>
+    <li>
+      <a href="05-prova.html">Exemplo teórico (da avaliação)</a>
+    </li>
+    <li>
+      <a href="06-namatodes.html">Exemplos prático (análise de experimento)</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://jreduardo.github.io/">Eduardo Jr's website</a>
+</li>
+<li>
+  <a href="https://github.com/JrEduardo/ce064-ml">
+    <span class="fa fa-github-alt fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore"><p>FBST - Full Bayesian Significance Test<br />
+Ideias iniciais</p></h1>
+<h4 class="author"><em>Eduardo E. R. Junior</em></h4>
+<h4 class="date"><em>20 de abril de 2016</em></h4>
+
+</div>
+
+
+<blockquote>
+<p><em>“Prof. Julio Stern sobre o Prof. Carlos Alberto de Bragança Pereira - FBST Full Bayesian Significance Test. Me ensinou quase toda a estatística que eu sei (isso foi fácil) depois de des-ensinar quase toda a estatística que eu pensava que sabia (bem mais difícil)!”</em></p>
+</blockquote>
+<ul>
+<li>Pesquisa dos professores Carlos A. de B. Perreira e Julio M. Stern, com principais desenvolvimentos no período de 1999 e 2009</li>
+<li>Proposta inicialmente publicada na revista <em>Entropy</em> em 1999 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></li>
+<li>Proposta “consolidada” com a publicação na revista <em>Bayesian Analysis</em> em 2008<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></li>
+</ul>
+<div id="a-ideia" class="section level1">
+<h1>A ideia</h1>
+<p><strong>“Fornecer uma teoria intuitiva, coerente e conveniente para acessar a significância estatística de hipóteses precisas.”</strong><a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
+<p>A metodologia FBST baseia-se na avaliação de <em>ev(H|X)</em>, ou <em>e-value</em> evidência da hipótese precisa H sob a obtenção da amostra X. Ainda conforme<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a>, esta metodologia com suporte no <em>e-value</em> apresenta propriedades desejáveis como:</p>
+<ol style="list-style-type: upper-roman">
+<li><p>Fornecer uma funcão de suporte à (ou medida de significância estatística da) hipótese em teste, idealmente uma medida de probabilidade no espaço paramétrico original ou natural do problema;</p></li>
+<li><p>Ter uma definicão intrinsecamente geométrica, independente de qualquer aspecto não geométrico, como a particular parametrizaçao da hipótese sendo testada, ou o particular sistema de coordenadas escolhido para o espaço paramétrico, i.e., ser um procedimento invariante;</p></li>
+<li><p>Fornecer uma função de suporte que seja suave, i.e. contínua e diferenciável, nos parâmetros da hipótese e nas estatísticas da amostra, dentro de condições apropriadas de regularidade do modelo;</p></li>
+<li><p>Obedecer ao princípio da verossimilhança, i.e. a informação obtida das observações deve ser representada pela, e apenas pela, função de verossimilhança;</p></li>
+<li><p>Não requerer qualquer artifício <em>ad hoc</em>, como dar probabilidades positivas a conjuntos de medida nula, ou estabelecer razões de crença iniciais arbitrárias entre hipóteses;</p></li>
+<li><p>Ser uma função de suporte possibilística, onde o suporte a uma disjunção lógica é o máximo entre o suporte dos disjuntos;</p></li>
+<li><p>Ser um procedimento exato, i.e., não utilizar na definição do <em>e-valor</em> qualquer aproximação assintótica;</p></li>
+<li><p>Fornecer um teste consistente para uma dada hipótese precisa;</p></li>
+<li><p>Fornecer operações de composicionalidade para modelos complexos;</p></li>
+<li><p>Permitir a incorporação de experiência prévia ou opiniões de especialistas via distribuições a priori.</p></li>
+</ol>
+<p>Veja o material original de Julio Stern <a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a>, onde para cada propriedade listada, uma publicação que a embasa é apresentada.</p>
+</div>
+<div id="o-metodo" class="section level1">
+<h1>O método</h1>
+<div id="definicoes" class="section level2">
+<h2>Definições</h2>
+<p><span class="math inline">\(\Xi\)</span>: Espaço amostral; <span class="math inline">\(\Delta\)</span>: Espaço observável; <span class="math inline">\(\Theta\)</span>: Espaço paramétrico.</p>
+<p>Hipótese precisa H, (<span class="math inline">\(\,g(\theta) \leq c \wedge h(\theta) = c\, , \textrm{sendo } c \textrm{ uma constante})\)</span>, tal que, <span class="math inline">\(\Theta_0 = \{\theta \in \Theta: H\}\)</span>.</p>
+<p><span class="math inline">\(f(\theta | d)\)</span> é a densidade posteriori obtida.</p>
+<p><span class="math inline">\(T_\varphi = \{ \theta \in \Theta \mid f(\theta | d) &gt; \varphi \}\)</span>, subespaço paramétrico onde a densidade posteriori é superior a <span class="math inline">\(\varphi\)</span></p>
+<p><span class="math inline">\(\mathbf{k}(T_\varphi) = \int_{T_\varphi} f(\theta | d)d\theta\)</span> é a credibilidade de <span class="math inline">\(T_\varphi\)</span> na posteriori.</p>
+</div>
+<div id="algoritmo" class="section level2">
+<h2>Algoritmo</h2>
+<ol style="list-style-type: decimal">
+<li><p>Encontre <span class="math inline">\(\theta^* = \arg \underset{\theta \in \Theta_0}{\max}f(\theta | d)\)</span></p></li>
+<li><p>Obtenha a densidade posteriori no ponto <span class="math inline">\(\theta^*\)</span>, <span class="math inline">\(f^* = f(\theta^*  | d )\)</span></p></li>
+<li><p>Obtenha o subespaço <span class="math inline">\(T* = T_{f^*}\)</span></p></li>
+<li><p>Calcule a credibilidade de <span class="math inline">\(\mathbf{k}^* = \mathbf{k}(T_{f^*})\)</span></p></li>
+<li><p>Calcule o <em>e-value</em> sobre H dado X, <span class="math inline">\(ev(H | X) = 1 - \mathbf{k}^*\)</span></p></li>
+</ol>
+</div>
+<div id="ilustracao" class="section level2">
+<h2>Ilustração</h2>
+<p>Exemplo 6.3 apresentado no artigo publicado na <em>Bayesian Analysis</em><a href="#fn6" class="footnoteRef" id="fnref6"><sup>6</sup></a></p>
+<p>No <em>gif</em> abaixo têm-se a ilustração da metodologia FBST aplicada a um conjunto de dados distribuídos normalmente com <span class="math inline">\(\mu\)</span> e <span class="math inline">\(\tau\)</span> desconhecidos. Atribuindo uma priori extremamente vaga ao vetor de parâmetros, i.e <span class="math inline">\((\mu, \tau) \in \Re \times \Re\)</span>, obtemos a densidade posteriori:</p>
+<p><span class="math display">\[
+f(\mu, \tau) = \tau^{6.5} \exp \left \{ -\frac{15\tau(\mu - 0.9)^2}{2}  \right \}
+\]</span></p>
+<p>As hipóteses precisas a serem testadas são:</p>
+<ul>
+<li><span class="math inline">\(H_0: \quad \mu = 1.1\)</span> (<font color="red"> Conjunto <span class="math inline">\(\Theta_0\)</span>)</font></li>
+<li><span class="math inline">\(H_1: \quad \tau = 2.5\)</span> (<font color="#2CF516"> Conjunto <span class="math inline">\(\Theta_1\)</span>)</font></li>
+<li><span class="math inline">\(H_2: \quad cv = \mu\sqrt{\tau} = 0.5\)</span> (<font color="blue"> Conjunto <span class="math inline">\(\Theta_2\)</span>)</font></li>
+</ul>
+<center>
+<iframe src="fbst-gif.html" width="100%" height="590" frameborder="0" scrolling="no" marginheight="0" marginwidth="0">
+</iframe>
+</center>
+</div>
+</div>
+<div id="exemplos" class="section level1">
+<h1>Exemplos</h1>
+<div id="intencao-de-voto" class="section level2">
+<h2>Intenção de voto</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##======================================================================
+## Obtendo a priori
+
+betaPrior &lt;-<span class="st"> </span>function(P, LI, LS, <span class="dt">CONF =</span> <span class="fl">0.80</span>) {
+    ## P = proporção (&quot;estimativa&quot; pontual)
+    ## LI, LS = limite inferior e superior para proporção
+    ## CONF = confiança do intervalo descritvo
+    fobj &lt;-<span class="st"> </span>function(alpha) {
+        beta &lt;-<span class="st"> </span>(alpha *<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span>P) -<span class="st"> </span><span class="dv">1</span> +<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>P)/P
+        prob &lt;-<span class="st"> </span><span class="kw">diff</span>(<span class="kw">pbeta</span>(<span class="dt">q =</span> <span class="kw">c</span>(LI, LS), alpha, beta))
+        (prob -<span class="st"> </span>CONF)^<span class="dv">2</span>
+    }
+    alpha &lt;-<span class="st"> </span><span class="kw">optimize</span>(fobj, <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">100</span>))$minimum
+    beta &lt;-<span class="st"> </span>(alpha *<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span>P) -<span class="st"> </span><span class="dv">1</span> +<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>P)/P
+    <span class="kw">return</span>(<span class="kw">list</span>(<span class="dt">alpha =</span> alpha, <span class="dt">beta =</span> beta))
+}
+
+(prior &lt;-<span class="st"> </span><span class="kw">betaPrior</span>(<span class="fl">0.525</span>, <span class="fl">0.4</span>, <span class="fl">0.65</span>, <span class="fl">0.95</span>))</code></pre></div>
+<pre><code>## $alpha
+## [1] 31.38933
+## 
+## $beta
+## [1] 28.4951</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##======================================================================
+## Obtendo a verossimilhanca
+
+y &lt;-<span class="st"> </span><span class="dv">24</span>  ## Numero de eleitores com intenção de votar no atual prefeito
+n &lt;-<span class="st"> </span><span class="dv">80</span>  ## Numero de eleitores consultados
+(veros &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">alpha =</span> y +<span class="st"> </span><span class="dv">1</span>, <span class="dt">beta =</span> n -<span class="st"> </span>y +<span class="st"> </span><span class="dv">1</span>))</code></pre></div>
+<pre><code>## $alpha
+## [1] 25
+## 
+## $beta
+## [1] 57</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##======================================================================
+## Obtendo a posteriori (analiticamente)
+(poste &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">alpha =</span> y +<span class="st"> </span>prior$alpha, <span class="dt">beta =</span> n -<span class="st"> </span>y +<span class="st"> </span>prior$beta))</code></pre></div>
+<pre><code>## $alpha
+## [1] 55.38933
+## 
+## $beta
+## [1] 84.4951</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(mode &lt;-<span class="st"> </span><span class="kw">with</span>(poste, (alpha -<span class="st"> </span><span class="dv">1</span>)/(alpha +<span class="st"> </span>beta -<span class="st"> </span><span class="dv">2</span>)))</code></pre></div>
+<pre><code>## [1] 0.3944559</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##======================================================================
+## Resultado da análise
+<span class="kw">par</span>(<span class="dt">lwd =</span> <span class="dv">2</span>, <span class="dt">bty =</span> <span class="st">&quot;n&quot;</span>)
+<span class="kw">with</span>(poste,   <span class="kw">curve</span>(<span class="kw">dbeta</span>(x, alpha, beta), <span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="dv">1</span>))
+<span class="kw">with</span>(prior, <span class="kw">curve</span>(<span class="kw">dbeta</span>(x, alpha, beta), <span class="dt">add =</span> <span class="ot">TRUE</span>, <span class="dt">lty =</span> <span class="dv">3</span>, <span class="dt">col =</span> <span class="dv">4</span>))
+<span class="kw">with</span>(veros, <span class="kw">curve</span>(<span class="kw">dbeta</span>(x, alpha, beta), <span class="dt">add =</span> <span class="ot">TRUE</span>, <span class="dt">lty =</span> <span class="dv">3</span>, <span class="dt">col =</span> <span class="dv">2</span>))
+<span class="kw">legend</span>(<span class="st">&quot;topright&quot;</span>, <span class="dt">col =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>), <span class="dt">lty =</span> <span class="dv">1</span>:<span class="dv">3</span>, <span class="dt">bty =</span> <span class="st">&quot;n&quot;</span>,
+       <span class="dt">legend =</span> <span class="kw">c</span>(<span class="st">&quot;Posteriori&quot;</span>, <span class="st">&quot;Verossimilhança&quot;</span>, <span class="st">&quot;Priori&quot;</span>))</code></pre></div>
+<p><img src="04-fbst_files/figure-html/unnamed-chunk-2-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>Testando as hipóteses <span class="math inline">\(H_0: \theta = 3\)</span> contra <span class="math inline">\(H_1: \theta \neq 3\)</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">attach</span>(poste)
+
+## FBST para exemplo simples (muito simples)
+
+theta0 &lt;-<span class="st"> </span><span class="fl">0.3</span>
+f0 &lt;-<span class="st"> </span><span class="kw">dbeta</span>(theta0, alpha, beta)
+t02 &lt;-<span class="st"> </span><span class="kw">uniroot</span>(function(x) <span class="kw">dbeta</span>(x, alpha, beta) -<span class="st"> </span>f0,
+               <span class="dt">interval =</span> <span class="kw">c</span>(<span class="fl">0.4</span>, <span class="dv">1</span>))
+(T0 &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.3</span>, t02$root))</code></pre></div>
+<pre><code>## [1] 0.3000000 0.4945294</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(k0 &lt;-<span class="st"> </span><span class="kw">diff</span>(<span class="kw">pbeta</span>(T0, alpha, beta)))</code></pre></div>
+<pre><code>## [1] 0.9823365</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(ev &lt;-<span class="st"> </span><span class="dv">1</span> -<span class="st"> </span>k0)</code></pre></div>
+<pre><code>## [1] 0.01766348</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Graficamente
+<span class="kw">curve</span>(<span class="kw">dbeta</span>(x, alpha, beta), <span class="dt">xlab =</span> <span class="kw">expression</span>(theta), <span class="dt">lwd =</span> <span class="dv">2</span>)
+<span class="kw">abline</span>(<span class="dt">v =</span> theta0, <span class="dt">col =</span> <span class="dv">4</span>, <span class="dt">lty =</span> <span class="dv">2</span>, <span class="dt">lwd =</span> <span class="dv">2</span>)
+##
+<span class="kw">abline</span>(<span class="dt">h =</span> f0, <span class="dt">col =</span> <span class="dv">5</span>)
+##
+<span class="kw">abline</span>(<span class="dt">v =</span> T0, <span class="dt">col =</span> <span class="dv">4</span>, <span class="dt">lty =</span> <span class="dv">2</span>, <span class="dt">lwd =</span> <span class="dv">2</span>)
+##
+x &lt;-<span class="st"> </span><span class="kw">seq</span>(T0[<span class="dv">1</span>], T0[<span class="dv">2</span>], <span class="dt">length.out =</span> <span class="dv">100</span>)
+fx &lt;-<span class="st"> </span><span class="kw">dbeta</span>(x, alpha, beta)
+<span class="kw">polygon</span>(<span class="kw">c</span>(x, <span class="kw">rev</span>(x)),
+        <span class="kw">c</span>(fx, <span class="kw">rep</span>(<span class="dv">0</span>, <span class="kw">length</span>(fx))),
+        <span class="dt">col=</span><span class="st">&quot;gray70&quot;</span>)
+<span class="kw">abline</span>(<span class="dt">v =</span> mode, <span class="dt">col =</span> <span class="dv">2</span>, <span class="dt">lty =</span> <span class="dv">2</span>)</code></pre></div>
+<p><img src="04-fbst_files/figure-html/unnamed-chunk-3-1.png" width="960" style="display: block; margin: auto;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">detach</span>(poste)</code></pre></div>
+<p>Avaliando o <em>“poder do teste”</em> com os dados do exemplo, supondo que o <span class="math inline">\(\theta\)</span> “”verdadeiro“” seja o valor modal da posteriori.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Função para calcular o valor de evidência FBST, especifico ao
+## problema verossimilhança Binomial, priori Beta
+
+f.ev &lt;-<span class="st"> </span>function(theta, posterior) {
+    <span class="kw">with</span>(posterior, {
+        f0 &lt;-<span class="st"> </span><span class="kw">dbeta</span>(theta, alpha, beta)
+        T0 &lt;-<span class="st"> </span>rootSolve::<span class="kw">uniroot.all</span>(
+            function(x) <span class="kw">dbeta</span>(x, alpha, beta) -<span class="st"> </span>f0,
+            <span class="dt">interval =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>))
+        if (<span class="kw">length</span>(T0) ==<span class="st"> </span><span class="dv">0</span>) {
+            <span class="kw">return</span>(<span class="dt">evalor =</span> <span class="dv">1</span>)
+        } else {
+            k0 &lt;-<span class="st"> </span><span class="kw">diff</span>(<span class="kw">pbeta</span>(T0, alpha, beta))
+            ev &lt;-<span class="st"> </span><span class="dv">1</span> -<span class="st"> </span><span class="kw">abs</span>(k0)
+            <span class="kw">return</span>(<span class="dt">evalor =</span> ev)
+        }
+    })
+}
+
+thetas &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dt">length.out =</span> <span class="dv">100</span>)
+evalues &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">sapply</span>(thetas, f.ev, <span class="dt">posterior =</span> poste))
+
+<span class="kw">plot</span>(<span class="dt">y =</span> <span class="dv">1</span> -<span class="st"> </span>evalues, <span class="dt">x =</span> thetas, <span class="dt">type =</span> <span class="st">&quot;l&quot;</span>,
+     <span class="dt">xlab =</span> <span class="kw">expression</span>(Theta[<span class="dv">0</span>]),
+     <span class="dt">ylab =</span> <span class="st">&quot;k* = 1 - e-values&quot;</span>)
+<span class="kw">abline</span>(<span class="dt">v =</span> mode, <span class="dt">col =</span> <span class="dv">4</span>, <span class="dt">lty =</span> <span class="dv">2</span>)
+<span class="kw">rug</span>(thetas)</code></pre></div>
+<p><img src="04-fbst_files/figure-html/unnamed-chunk-4-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="materiais-consultados" class="section level1">
+<h1>Materiais consultados</h1>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Artigo que propõe o FBST <a href="http://www.mdpi.org/entropy/papers/e1040099.pdf" class="uri">http://www.mdpi.org/entropy/papers/e1040099.pdf</a><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Artigo que consolida a metodologia FBST <a href="http://computacao.br/~jstern/papers/papersJS/jsbayan1.pdf" class="uri">http://computacao.br/~jstern/papers/papersJS/jsbayan1.pdf</a><a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>Aula de Erudição (Textos de memorial por Julio Stern) <a href="https://www.ime.usp.br/~jstern/vitae/jmst2.pdf" class="uri">https://www.ime.usp.br/~jstern/vitae/jmst2.pdf</a> (texto pleno)<a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>Aula de Erudição (Textos de memorial por Julio Stern) <a href="https://www.ime.usp.br/~jstern/vitae/jmst2.pdf" class="uri">https://www.ime.usp.br/~jstern/vitae/jmst2.pdf</a> (texto pleno)<a href="#fnref4">↩</a></p></li>
+<li id="fn5"><p>Aula de Erudição (Textos de memorial por Julio Stern) <a href="https://www.ime.usp.br/~jstern/vitae/jmst2.pdf" class="uri">https://www.ime.usp.br/~jstern/vitae/jmst2.pdf</a> (texto pleno)<a href="#fnref5">↩</a></p></li>
+<li id="fn6"><p>Artigo que consolida a metodologia FBST <a href="http://computacao.br/~jstern/papers/papersJS/jsbayan1.pdf" class="uri">http://computacao.br/~jstern/papers/papersJS/jsbayan1.pdf</a><a href="#fnref6">↩</a></p></li>
+</ol>
+</div>
+
+<br>
+<hr>
+<center>© Copyright 2016 Ribeiro Jr., E. E.</center>
+<br>
+
+<div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'eerj-website';
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+  </script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

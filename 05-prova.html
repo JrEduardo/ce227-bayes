@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Eduardo E. R. Junior - DEST/UFPR" />
+
+
+<title>Inferência Bayesiana - resolução exercício da prova</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/yeti.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+div.sourceCode {
+  overflow-x: visible;
+}
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="_style.css" type="text/css" />
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 45px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+
+.section h2 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+.section h3 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+.section h4 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+.section h5 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+.section h6 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = false;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.9em;
+  padding-left: 5px;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+  padding-left: 10px;
+}
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Atividades
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="01-intecaovoto.html">Exemplo intenção de voto</a>
+    </li>
+    <li>
+      <a href="02-pvalor.html">Princípio da Verossimilhança</a>
+    </li>
+    <li>
+      <a href="03-gamma-jeffrey.pdf">Inferência sobre o parâmetro de forma da Gamma</a>
+    </li>
+    <li>
+      <a href="04-fbst.html">FBST - Full Bayesian Significance Test</a>
+    </li>
+    <li>
+      <a href="05-prova.html">Exemplo teórico (da avaliação)</a>
+    </li>
+    <li>
+      <a href="06-namatodes.html">Exemplos prático (análise de experimento)</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://jreduardo.github.io/">Eduardo Jr's website</a>
+</li>
+<li>
+  <a href="https://github.com/JrEduardo/ce064-ml">
+    <span class="fa fa-github-alt fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Inferência Bayesiana - resolução exercício da prova</h1>
+<h4 class="author"><em>Eduardo E. R. Junior - DEST/UFPR</em></h4>
+<h4 class="date"><em>22 de junho de 2016</em></h4>
+
+</div>
+
+
+<div id="definicao-do-problema" class="section level1">
+<h1>Definição do problema</h1>
+<p><strong>5</strong>. Considere os dados (iid) <span class="math inline">\(x = (x_i, \dots, x_n)\)</span> das taxas de sucesso no primeiro saque de um jogador de tênis em n jogos de um campeonato. Assuma o modelo <span class="math inline">\(X\mid\theta \sim f(x_i\mid\theta) =  \theta(\theta+1)x_i^{\theta - 1}(1 - x_i)\)</span> com <span class="math inline">\(x_i \in (0, 1)\)</span> e <span class="math inline">\(\theta&gt;0\)</span>. Não existe uma família conjugada usual para este modelo e considera-se uma priori gamma <span class="math inline">\(\theta \sim Gamma(a, b)\)</span>.</p>
+<p><strong>6</strong>. Considere agora que n = 20, <span class="math inline">\(\sum_i \log(x_i) = 4,59\)</span> e suponha que a priori é definida <span class="math inline">\(a = b = 1\)</span>. Mostre como esses dados seriam utilizados na obtenção das expressões relevantes das abordagens mencionadas.</p>
+<div id="verossimilhanca" class="section level2">
+<h2>Verossimilhança</h2>
+<p><span class="math display">\[
+\begin{align*}
+    f(x_i\mid\theta) &amp;= \theta(\theta+1)x_i^{\theta - 1}(1 - x_i) \\
+    L(\theta \mid \underline{x}) &amp;= \theta^n (\theta+1)^n \prod_i^n
+        \left [ x_i^{\theta - 1}(1 - x_i)\right ]\\
+    l(\theta \mid \underline{x}) &amp;= n (\log(\theta) +
+        \log(\theta + 1)) + (\theta - 1) \sum_i^n \log{x_i}
+\end{align*}
+\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Função de verossimilhança
+veross &lt;-<span class="st"> </span>function(par, <span class="dt">slx =</span> -<span class="fl">4.59</span>, <span class="dt">n =</span> <span class="dv">20</span>, <span class="dt">log =</span> <span class="ot">TRUE</span>,
+                   <span class="dt">paramet =</span> <span class="kw">c</span>(<span class="st">&quot;theta&quot;</span>, <span class="st">&quot;phi&quot;</span>)) {
+    parametrization &lt;-<span class="st"> </span><span class="kw">match.arg</span>(paramet)
+    switch(parametrization,
+           <span class="st">&quot;theta&quot;</span> =<span class="st"> </span>{theta &lt;-<span class="st"> </span>par},
+           <span class="st">&quot;phi&quot;</span> =<span class="st"> </span>{theta &lt;-<span class="st"> </span><span class="kw">exp</span>(par)}
+           )
+    out &lt;-<span class="st"> </span>n *<span class="st"> </span>(<span class="kw">log</span>(theta) +<span class="st"> </span><span class="kw">log</span>(theta +<span class="st"> </span><span class="dv">1</span>)) +<span class="st"> </span>(theta -<span class="st"> </span><span class="dv">1</span>) *<span class="st"> </span>slx
+    if (!log) out &lt;-<span class="st"> </span><span class="kw">exp</span>(out)
+    <span class="kw">attr</span>(out, <span class="st">&quot;parametrization&quot;</span>) &lt;-<span class="st"> </span>parametrization
+    <span class="kw">return</span>(out)
+}</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Obtendo o máximo da verossimilhança numericamente [theta]
+
+## Parametrização original
+tmaxi &lt;-<span class="st"> </span><span class="kw">optimize</span>(veross, <span class="dt">interval =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">60</span>), <span class="dt">paramet =</span> <span class="st">&quot;theta&quot;</span>,
+                  <span class="dt">slx =</span> -<span class="fl">4.59</span>, <span class="dt">n =</span> <span class="dv">20</span>, <span class="dt">maximum =</span> <span class="ot">TRUE</span>)$maximum
+thess &lt;-<span class="st"> </span><span class="kw">optimHess</span>(tmaxi, veross)
+<span class="kw">c</span>(<span class="st">&quot;tmaxi&quot;</span> =<span class="st"> </span>tmaxi, <span class="st">&quot;thess&quot;</span> =<span class="st"> </span>thess)</code></pre></div>
+<pre><code>##      tmaxi      thess 
+##  8.2431886 -0.5284253</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Sob reparametrização [phi = log(theta)]
+pmaxi &lt;-<span class="st"> </span><span class="kw">optimize</span>(veross, <span class="dt">interval =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">60</span>), <span class="dt">paramet =</span> <span class="st">&quot;phi&quot;</span>,
+                  <span class="dt">slx =</span> -<span class="fl">4.59</span>, <span class="dt">n =</span> <span class="dv">20</span>, <span class="dt">maximum =</span> <span class="ot">TRUE</span>)$maximum
+phess &lt;-<span class="st"> </span><span class="kw">optimHess</span>(pmaxi, veross)
+<span class="kw">c</span>(<span class="st">&quot;pmaxi&quot;</span> =<span class="st"> </span>pmaxi, <span class="st">&quot;phess&quot;</span> =<span class="st"> </span>phess)</code></pre></div>
+<pre><code>##     pmaxi     phess 
+##  2.109399 -6.563426</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Curvas de verossimilhança
+ep.theta &lt;-<span class="st"> </span><span class="kw">sqrt</span>(-thess^-<span class="dv">1</span>)
+ep.phi &lt;-<span class="st"> </span><span class="kw">sqrt</span>(-phess^-<span class="dv">1</span>)
+
+<span class="kw">curve</span>(<span class="kw">veross</span>(<span class="dt">par =</span> x, <span class="dt">paramet =</span> <span class="st">&quot;theta&quot;</span>),
+      <span class="dt">from =</span> tmaxi -<span class="st"> </span><span class="dv">3</span>*<span class="st"> </span>ep.theta,
+      <span class="dt">to =</span> tmaxi +<span class="st"> </span><span class="dv">3</span>*ep.theta,
+      <span class="dt">ylab =</span> <span class="st">&quot;log-Verossimilhança&quot;</span>,
+      <span class="dt">xlab =</span> <span class="st">&quot;&quot;</span>)
+<span class="kw">abline</span>(<span class="dt">v =</span> tmaxi, <span class="dt">lty =</span> <span class="dv">2</span>, <span class="dt">col =</span> <span class="dv">1</span>)
+<span class="kw">par</span>(<span class="dt">new =</span> <span class="ot">TRUE</span>)
+<span class="kw">curve</span>(<span class="kw">veross</span>(<span class="dt">par =</span> x, <span class="dt">paramet =</span> <span class="st">&quot;phi&quot;</span>),
+      <span class="dt">from =</span> pmaxi -<span class="st"> </span><span class="dv">3</span>*ep.phi,
+      <span class="dt">to =</span> pmaxi +<span class="st"> </span><span class="dv">3</span>*ep.phi,
+      <span class="dt">ylab =</span> <span class="st">&quot;&quot;</span>,
+      <span class="dt">xlab =</span> <span class="st">&quot;&quot;</span>,
+      <span class="dt">axes =</span> <span class="ot">FALSE</span>,
+      <span class="dt">col =</span> <span class="dv">4</span>)
+<span class="kw">axis</span>(<span class="dv">3</span>, <span class="dt">at =</span> <span class="kw">pretty</span>(pmaxi +<span class="st"> </span><span class="kw">c</span>(-<span class="dv">1</span>, <span class="dv">1</span>) *<span class="st"> </span><span class="dv">3</span> *<span class="st"> </span>ep.phi), <span class="dt">col.axis =</span> <span class="dv">4</span>)
+<span class="kw">abline</span>(<span class="dt">v =</span> pmaxi, <span class="dt">lty =</span> <span class="dv">3</span>, <span class="dt">col =</span> <span class="dv">4</span>)
+
+<span class="kw">legend</span>(<span class="st">&quot;topright&quot;</span>,
+       <span class="dt">legend =</span> <span class="kw">expression</span>(theta==theta, phi==<span class="kw">log</span>(theta)),
+       <span class="dt">lty =</span> <span class="dv">1</span>, <span class="dt">lwd =</span> <span class="dv">2</span>, <span class="dt">col =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">4</span>), <span class="dt">bty =</span> <span class="st">&quot;n&quot;</span>)</code></pre></div>
+<p><img src="05-prova_files/figure-html/maxveross-1.png" width="672" /></p>
+</div>
+<div id="atualizacao-bayesiana" class="section level2">
+<h2>Atualização Bayesiana</h2>
+<p>Incorporando a informação a priori temos:</p>
+<p>Priori <span class="math display">\[
+\begin{align*}
+    f(\theta) &amp;= \frac{1}{\Gamma(a)b^a}\theta^{a-1}
+        e^{-\frac{1}{b}\theta} \\
+    f(\theta) &amp;\propto \theta^{a-1} e^{-\frac{1}{b}\theta}
+\end{align*}
+\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Informação a priori
+<span class="kw">curve</span>(<span class="kw">dgamma</span>(x, <span class="dv">1</span>, <span class="dv">1</span>), <span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="dv">12</span>,
+      <span class="dt">xlab =</span> <span class="kw">expression</span>(theta))
+<span class="kw">abline</span>(<span class="dt">v =</span> tmaxi, <span class="dt">lty =</span> <span class="dv">2</span>, <span class="dt">col =</span> <span class="dv">4</span>)</code></pre></div>
+<p><img src="05-prova_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>Posteriori</p>
+<p><span class="math display">\[
+\begin{align*}
+    &amp; f(\theta \mid \underline{x}) \propto \theta^{a-1}
+        e^{-\frac{1}{b}\theta} \theta^n (\theta + 1)^n
+        \prod_i^n \left (x_i^{\theta - 1} \right ) \\
+    &amp; f(\theta \mid \underline{x}) \propto (\theta+1)^n \theta^{n+a-1}
+        e^{\frac{-\theta}{b} + (\theta-1) \sum_i^n \log(x_i)}
+\end{align*}
+\]</span></p>
+<p>log-Posteriori</p>
+<p><span class="math display">\[
+\begin{align*}
+    \log(f(\theta \mid \underline{x})) \propto n\log(\theta+1) +
+    (n+a+1)\log(\theta) - \theta \left ( \frac{1}{b} - \sum\log(x)
+    \right )
+\end{align*}
+\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Função posteriori
+posterior &lt;-<span class="st"> </span>function(par, <span class="dt">slx =</span> -<span class="fl">4.59</span>, <span class="dt">n =</span> <span class="dv">20</span>, <span class="dt">a =</span> <span class="dv">1</span>, <span class="dt">b =</span> <span class="dv">1</span>,
+                      <span class="dt">log =</span> <span class="ot">TRUE</span>, <span class="dt">paramet =</span> <span class="kw">c</span>(<span class="st">&quot;theta&quot;</span>, <span class="st">&quot;phi&quot;</span>)) {
+    parametrization &lt;-<span class="st"> </span><span class="kw">match.arg</span>(paramet)
+    switch(parametrization,
+           <span class="st">&quot;theta&quot;</span> =<span class="st"> </span>{theta &lt;-<span class="st"> </span>par},
+           <span class="st">&quot;phi&quot;</span> =<span class="st"> </span>{theta &lt;-<span class="st"> </span><span class="kw">exp</span>(par)}
+           )
+    out &lt;-<span class="st"> </span>n *<span class="st"> </span><span class="kw">log</span>(theta +<span class="st"> </span><span class="dv">1</span>) +<span class="st"> </span>(n +<span class="st"> </span>a -<span class="st"> </span><span class="dv">1</span>) *<span class="st"> </span><span class="kw">log</span>(theta) -
+<span class="st">        </span>theta *<span class="st"> </span>(<span class="dv">1</span>/b -<span class="st"> </span>slx)
+    if (!log) out &lt;-<span class="st"> </span><span class="kw">exp</span>(out)
+    <span class="kw">return</span>(out)
+}</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Curvas da posteriori
+##-------------------------------------------
+## Obtendo o máximo da verossimilhança numericamente [theta]
+
+## Parametrização original
+tmaxip &lt;-<span class="st"> </span><span class="kw">optimize</span>(posterior, <span class="dt">interval =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">60</span>), <span class="dt">paramet =</span> <span class="st">&quot;theta&quot;</span>,
+                   <span class="dt">slx =</span> -<span class="fl">4.59</span>, <span class="dt">n =</span> <span class="dv">20</span>, <span class="dt">maximum =</span> <span class="ot">TRUE</span>)$maximum
+thessp &lt;-<span class="st"> </span><span class="kw">optimHess</span>(tmaxip, posterior)
+<span class="kw">c</span>(<span class="st">&quot;tmaxi&quot;</span> =<span class="st"> </span>tmaxip, <span class="st">&quot;thess&quot;</span> =<span class="st"> </span>thessp)</code></pre></div>
+<pre><code>##      tmaxi      thess 
+##  6.6904159 -0.7849772</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Sob reparametrização [phi = log(theta)]
+pmaxip &lt;-<span class="st"> </span><span class="kw">optimize</span>(posterior, <span class="dt">interval =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">60</span>), <span class="dt">paramet =</span> <span class="st">&quot;phi&quot;</span>,
+                   <span class="dt">slx =</span> -<span class="fl">4.59</span>, <span class="dt">n =</span> <span class="dv">20</span>, <span class="dt">maximum =</span> <span class="ot">TRUE</span>)$maximum
+phessp &lt;-<span class="st"> </span><span class="kw">optimHess</span>(pmaxip, posterior)
+<span class="kw">c</span>(<span class="st">&quot;pmaxi&quot;</span> =<span class="st"> </span>pmaxip, <span class="st">&quot;phess&quot;</span> =<span class="st"> </span>phessp)</code></pre></div>
+<pre><code>##     pmaxi     phess 
+##  1.900657 -7.913388</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Curvas de posteriori
+ep.thetap &lt;-<span class="st"> </span><span class="kw">sqrt</span>(-thess^-<span class="dv">1</span>)
+ep.phip &lt;-<span class="st"> </span><span class="kw">sqrt</span>(-phess^-<span class="dv">1</span>)
+
+<span class="kw">curve</span>(<span class="kw">posterior</span>(<span class="dt">par =</span> x, <span class="dt">paramet =</span> <span class="st">&quot;theta&quot;</span>),
+      <span class="dt">from =</span> tmaxip -<span class="st"> </span><span class="dv">3</span>*ep.thetap,
+      <span class="dt">to =</span> tmaxip +<span class="st"> </span><span class="dv">3</span>*ep.thetap,
+      <span class="dt">ylab =</span> <span class="st">&quot;log-posteriori&quot;</span>,
+      <span class="dt">xlab =</span> <span class="st">&quot;&quot;</span>)
+<span class="kw">abline</span>(<span class="dt">v =</span> tmaxip, <span class="dt">lty =</span> <span class="dv">2</span>, <span class="dt">col =</span> <span class="dv">1</span>)
+<span class="kw">par</span>(<span class="dt">new =</span> <span class="ot">TRUE</span>)
+<span class="kw">curve</span>(<span class="kw">posterior</span>(<span class="dt">par =</span> x, <span class="dt">paramet =</span> <span class="st">&quot;phi&quot;</span>),
+      <span class="dt">from =</span> pmaxip -<span class="st"> </span><span class="dv">3</span>*ep.phip,
+      <span class="dt">to =</span> pmaxip +<span class="st"> </span><span class="dv">3</span>*ep.phip,
+      <span class="dt">ylab =</span> <span class="st">&quot;&quot;</span>,
+      <span class="dt">xlab =</span> <span class="st">&quot;&quot;</span>,
+      <span class="dt">axes =</span> <span class="ot">FALSE</span>,
+      <span class="dt">col =</span> <span class="dv">4</span>)
+<span class="kw">axis</span>(<span class="dv">3</span>, <span class="dt">at =</span> <span class="kw">pretty</span>(pmaxip +<span class="st"> </span><span class="kw">c</span>(-<span class="dv">1</span>, <span class="dv">1</span>) *<span class="st"> </span><span class="dv">3</span> *<span class="st"> </span>ep.phip), <span class="dt">col.axis =</span> <span class="dv">4</span>)
+<span class="kw">abline</span>(<span class="dt">v =</span> pmaxip, <span class="dt">lty =</span> <span class="dv">3</span>, <span class="dt">col =</span> <span class="dv">4</span>)
+
+<span class="kw">legend</span>(<span class="st">&quot;topright&quot;</span>,
+       <span class="dt">legend =</span> <span class="kw">expression</span>(theta==theta, phi==<span class="kw">log</span>(theta)),
+       <span class="dt">lty =</span> <span class="dv">1</span>, <span class="dt">lwd =</span> <span class="dv">2</span>, <span class="dt">col =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">4</span>), <span class="dt">bty =</span> <span class="st">&quot;n&quot;</span>)</code></pre></div>
+<p><img src="05-prova_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+</div>
+</div>
+<div id="obtendo-a-posteriori" class="section level1">
+<h1>Obtendo a posteriori</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Constante normalizadora da verossimilhanca (int L * 1/cte dtheta = 1)
+cte &lt;-<span class="st"> </span><span class="kw">integrate</span>(veross, <span class="dt">lower =</span> <span class="dv">0</span>, <span class="dt">upper =</span> tmaxi<span class="dv">+5</span>*ep.theta,
+                 <span class="dt">log =</span> <span class="ot">FALSE</span>)$value</code></pre></div>
+<div id="por-aproximacao-normal" class="section level2">
+<h2>Por Aproximação Normal</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##----------------------------------------------------------------------
+## Por aproximação Normal
+mu &lt;-<span class="st"> </span>tmaxip
+sigma &lt;-<span class="st"> </span><span class="kw">sqrt</span>((-thessp)^-<span class="dv">1</span>)
+
+## Posteriori aproximada
+<span class="kw">curve</span>(<span class="kw">dnorm</span>(x, <span class="dt">mean =</span> mu, <span class="dt">sd =</span> sigma),
+      <span class="dt">from =</span> tmaxip -<span class="st"> </span><span class="fl">4.5</span>*ep.thetap,
+      <span class="dt">to =</span> tmaxip +<span class="st"> </span><span class="fl">4.5</span>*ep.thetap,
+      <span class="dt">ylab =</span> <span class="st">&quot;log-Verossimilhança&quot;</span>,
+      <span class="dt">xlab =</span> <span class="kw">expression</span>(theta))
+<span class="kw">arrows</span>(tmaxip, <span class="fl">0.05</span>, tmaxip, <span class="dv">0</span>, <span class="dt">col =</span> <span class="dv">1</span>, <span class="dt">length =</span> <span class="fl">0.1</span>)
+## Verossimilhança normalizada
+<span class="kw">curve</span>(<span class="kw">veross</span>(<span class="dt">par =</span> x, <span class="dt">paramet =</span> <span class="st">&quot;theta&quot;</span>, <span class="dt">log =</span> <span class="ot">FALSE</span>)/cte,
+      <span class="dt">add =</span> <span class="ot">TRUE</span>, <span class="dt">lty =</span> <span class="dv">2</span>, <span class="dt">col =</span> <span class="dv">4</span>)
+<span class="kw">arrows</span>(tmaxi, <span class="fl">0.05</span>, tmaxi, <span class="dv">0</span>, <span class="dt">col =</span> <span class="dv">4</span>, <span class="dt">length =</span> <span class="fl">0.1</span>)
+## Priori
+<span class="kw">curve</span>(<span class="kw">dgamma</span>(x, <span class="dv">1</span>, <span class="dv">1</span>), <span class="dt">add =</span> <span class="ot">TRUE</span>, <span class="dt">lty =</span> <span class="dv">3</span>, <span class="dt">col =</span> <span class="dv">2</span>)
+
+<span class="kw">legend</span>(<span class="dt">x =</span> <span class="fl">1.5</span>, <span class="dt">y =</span> <span class="fl">0.35</span>,
+       <span class="dt">legend =</span> <span class="kw">c</span>(<span class="st">&quot;priori&quot;</span>, <span class="st">&quot;verossimilhanca&quot;</span>, <span class="st">&quot;posteriori&quot;</span>),
+       <span class="dt">lty =</span> <span class="kw">c</span>(<span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">1</span>), <span class="dt">lwd =</span> <span class="dv">2</span>, <span class="dt">col =</span> <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">1</span>), <span class="dt">bty =</span> <span class="st">&quot;n&quot;</span>)</code></pre></div>
+<p><img src="05-prova_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<div id="resumos-da-posteriori" class="section level3">
+<h3>Resumos da posteriori</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Resumos da posteriori
+<span class="kw">rbind</span>(<span class="st">&quot;Média&quot;</span> =<span class="st"> </span>tmaxip,
+      <span class="st">&quot;Mediana&quot;</span> =<span class="st"> </span>tmaxip,
+      <span class="st">&quot;Moda&quot;</span> =<span class="st"> </span>tmaxip,
+      <span class="st">&quot;IC95%&quot;</span> =<span class="st"> </span><span class="kw">paste</span>(
+          <span class="kw">round</span>(<span class="kw">qnorm</span>(<span class="kw">c</span>(<span class="fl">0.025</span>, <span class="fl">0.975</span>), <span class="dt">mean =</span> mu, <span class="dt">sd =</span> sigma), <span class="dv">3</span>),
+          <span class="dt">collapse =</span> <span class="st">&quot;; &quot;</span>
+      ))</code></pre></div>
+<pre><code>##         [,1]              
+## Média   &quot;6.69041592770301&quot;
+## Mediana &quot;6.69041592770301&quot;
+## Moda    &quot;6.69041592770301&quot;
+## IC95%   &quot;4.478; 8.903&quot;</code></pre>
+</div>
+</div>
+<div id="por-discretizacao" class="section level2">
+<h2>Por discretização</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##----------------------------------------------------------------------
+## Por discretização
+seqTheta &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">2</span>, <span class="dv">12</span>, <span class="dt">length.out =</span> <span class="dv">101</span>)
+pesoTheta &lt;-<span class="st"> </span><span class="kw">posterior</span>(seqTheta, <span class="dt">log =</span> <span class="ot">FALSE</span>)
+probTheta &lt;-<span class="st"> </span>pesoTheta /<span class="st"> </span><span class="kw">sum</span>(pesoTheta)
+
+## Distribuição discreta
+<span class="kw">plot</span>(<span class="dv">10</span>*probTheta ~<span class="st"> </span>seqTheta, <span class="dt">type =</span> <span class="st">&quot;h&quot;</span>,
+     <span class="dt">ylab =</span> <span class="st">&quot;Densidade&quot;</span>)
+## Verossimilhança normalizada
+<span class="kw">curve</span>(<span class="kw">veross</span>(<span class="dt">par =</span> x, <span class="dt">paramet =</span> <span class="st">&quot;theta&quot;</span>, <span class="dt">log =</span> <span class="ot">FALSE</span>)/cte,
+      <span class="dt">add =</span> <span class="ot">TRUE</span>, <span class="dt">lty =</span> <span class="dv">2</span>, <span class="dt">col =</span> <span class="dv">4</span>)
+<span class="kw">arrows</span>(tmaxi, <span class="fl">0.05</span>, tmaxi, -<span class="fl">0.01</span>, <span class="dt">col =</span> <span class="dv">4</span>, <span class="dt">length =</span> <span class="fl">0.1</span>)
+## Priori
+<span class="kw">curve</span>(<span class="kw">dgamma</span>(x, <span class="dv">1</span>, <span class="dv">1</span>), <span class="dt">add =</span> <span class="ot">TRUE</span>, <span class="dt">lty =</span> <span class="dv">3</span>, <span class="dt">col =</span> <span class="dv">2</span>)
+<span class="kw">arrows</span>(<span class="kw">sum</span>(seqTheta*probTheta), <span class="fl">0.05</span>, <span class="kw">sum</span>(seqTheta*probTheta),
+       -<span class="fl">0.01</span>, <span class="dt">col =</span> <span class="dv">1</span>, <span class="dt">length =</span> <span class="fl">0.1</span>)
+
+<span class="kw">legend</span>(<span class="dt">x =</span> <span class="dv">2</span>, <span class="dt">y =</span> <span class="fl">0.35</span>,
+       <span class="dt">legend =</span> <span class="kw">c</span>(<span class="st">&quot;priori&quot;</span>, <span class="st">&quot;verossimilhanca&quot;</span>, <span class="st">&quot;posteriori&quot;</span>),
+       <span class="dt">lty =</span> <span class="kw">c</span>(<span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">1</span>), <span class="dt">lwd =</span> <span class="dv">2</span>, <span class="dt">col =</span> <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">1</span>), <span class="dt">bty =</span> <span class="st">&quot;n&quot;</span>)</code></pre></div>
+<p><img src="05-prova_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<div id="resumos-da-posteriori-1" class="section level3">
+<h3>Resumos da posteriori</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Aproximação da função inversa da acumulada
+qdist &lt;-<span class="st"> </span><span class="kw">approxfun</span>(<span class="dt">x =</span> <span class="kw">cumsum</span>(probTheta), <span class="dt">y =</span> seqTheta)
+
+## Resumos da posteriori
+<span class="kw">rbind</span>(<span class="st">&quot;Média&quot;</span> =<span class="st"> </span><span class="kw">sum</span>(seqTheta*probTheta),
+      <span class="st">&quot;Mediana&quot;</span> =<span class="st"> </span><span class="kw">qdist</span>(<span class="fl">0.5</span>),
+      <span class="st">&quot;Moda&quot;</span> =<span class="st"> </span>seqTheta[<span class="kw">which.max</span>(probTheta)],
+      <span class="st">&quot;IC95&quot;</span> =<span class="st"> </span><span class="kw">paste</span>(
+        <span class="kw">round</span>(<span class="kw">qdist</span>(<span class="kw">c</span>(<span class="fl">0.025</span>, <span class="fl">0.975</span>)), <span class="dv">3</span>),
+        <span class="dt">collapse =</span> <span class="st">&quot;; &quot;</span>)
+      )</code></pre></div>
+<pre><code>##         [,1]              
+## Média   &quot;6.86977998572394&quot;
+## Mediana &quot;6.76030482454143&quot;
+## Moda    &quot;6.7&quot;             
+## IC95    &quot;4.754; 9.224&quot;</code></pre>
+</div>
+</div>
+<div id="por-amostragem" class="section level2">
+<h2>Por amostragem</h2>
+<div id="definindo-os-amostradores" class="section level3">
+<h3>Definindo os amostradores</h3>
+<p>Pacote <a href="http://search.r-project.org/library/MCMCpack/html/00Index.html"><code>MCMCpack</code></a> será utilizado</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(MCMCpack)</code></pre></div>
+<pre><code>## Loading required package: coda</code></pre>
+<pre><code>## Loading required package: MASS</code></pre>
+<pre><code>## ##
+## ## Markov Chain Monte Carlo Package (MCMCpack)</code></pre>
+<pre><code>## ## Copyright (C) 2003-2016 Andrew D. Martin, Kevin M. Quinn, and Jong Hee Park</code></pre>
+<pre><code>## ##
+## ## Support provided by the U.S. National Science Foundation</code></pre>
+<pre><code>## ## (Grants SES-0350646 and SES-0350613)
+## ##</code></pre>
+<pre><code>## 
+## Attaching package: &#39;MCMCpack&#39;</code></pre>
+<pre><code>## The following object is masked _by_ &#39;.GlobalEnv&#39;:
+## 
+##     dinvgamma</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">args</span>(MCMCmetrop1R)</code></pre></div>
+<pre><code>## function (fun, theta.init, burnin = 500, mcmc = 20000, thin = 1, 
+##     tune = 1, verbose = 0, seed = NA, logfun = TRUE, force.samp = FALSE, 
+##     V = NULL, optim.method = &quot;BFGS&quot;, optim.lower = -Inf, optim.upper = Inf, 
+##     optim.control = list(fnscale = -1, trace = 0, REPORT = 10, 
+##         maxit = 500), ...) 
+## NULL</code></pre>
+<p>E uma implementação, mais simples, do amostrador Metropolis é feita na função <code>myMCMC</code></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Amostrador
+myMCMC &lt;-<span class="st"> </span>function(fun, theta.init, <span class="dt">burnin =</span> <span class="dv">5000</span>,
+                   <span class="dt">mcmc =</span> <span class="dv">20000</span>, <span class="dt">thin =</span> <span class="dv">1</span>, <span class="dt">tune =</span> <span class="dv">1</span>) {
+    sim &lt;-<span class="st"> </span><span class="kw">numeric</span>(mcmc)
+    sim[<span class="dv">1</span>] &lt;-<span class="st"> </span>theta.init
+    aceitos &lt;-<span class="st"> </span><span class="dv">0</span>
+    for (i in <span class="dv">2</span>:mcmc) {
+        oldtheta &lt;-<span class="st"> </span>sim[i -<span class="st"> </span><span class="dv">1</span>]
+        newtheta &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="dv">1</span>, <span class="dt">min =</span> oldtheta -<span class="st"> </span>tune,
+                          <span class="dt">max =</span> oldtheta +<span class="st"> </span>tune)
+        ## alpha &lt;- min(1, fun(newtheta)/fun(oldtheta))
+        alpha &lt;-<span class="st"> </span><span class="kw">min</span>(<span class="dv">1</span>, <span class="kw">exp</span>(<span class="kw">fun</span>(newtheta) -<span class="st"> </span><span class="kw">fun</span>(oldtheta)))
+        if (<span class="kw">runif</span>(<span class="dv">1</span>) &lt;=<span class="st"> </span>alpha) {
+            sim[i] &lt;-<span class="st"> </span>newtheta
+            aceitos &lt;-<span class="st"> </span>aceitos +<span class="st"> </span><span class="dv">1</span>
+        } else {
+            sim[i] &lt;-<span class="st"> </span>oldtheta
+        }
+    }
+    ##-------------------------------------------
+    ## THINING
+    thining &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">1</span>, <span class="kw">length</span>(sim), <span class="dt">by =</span> thin)
+    sim &lt;-<span class="st"> </span>sim[thining]
+    ##-------------------------------------------
+    ## BURNIN
+    if (burnin !=<span class="st"> </span><span class="dv">0</span>) {
+        sim &lt;-<span class="st"> </span>sim[-(<span class="dv">1</span>:burnin)]
+    }
+    ##-------------------------------------------
+    ## FIRULA
+    ta &lt;-<span class="st"> </span>aceitos/(mcmc -<span class="st"> </span><span class="dv">1</span>)
+    <span class="kw">cat</span>(<span class="st">&quot;==================================================&quot;</span>,
+        <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+    <span class="kw">cat</span>(<span class="kw">paste</span>(<span class="st">&quot;A taxa de aceitação foi de&quot;</span>, <span class="kw">round</span>(ta, <span class="dv">3</span>)),
+        <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+    <span class="kw">cat</span>(<span class="st">&quot;==================================================&quot;</span>,
+        <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+    ##-------------------------------------------
+    <span class="kw">attr</span>(sim, <span class="st">&quot;taxa.aceito&quot;</span>) &lt;-<span class="st"> </span>aceitos/(mcmc -<span class="st"> </span><span class="dv">1</span>)
+    <span class="kw">return</span>(sim)
+}</code></pre></div>
+<p>Detalhe importante, embora tenha-se deixado as funções com o mesmo argumento <code>tune</code>, este não representam a mesma alteração no amostrador. Na função do <code>MCMCPack</code> se é proposto um novo valor de uma distribuição Normal (multivariada se pars é um vetor) e na <code>myMCMC</code> é prosposto simplesmente de uma distribuição uniforme.</p>
+</div>
+</div>
+<div id="amostrando-e-avaliando-as-amostras" class="section level2">
+<h2>Amostrando e avaliando as amostras</h2>
+<p>Via <code>myMCMC</code></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Amostrando via myMCMC
+K &lt;-<span class="st"> </span><span class="dv">2</span>
+amos &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="st">&quot;list&quot;</span>, K)
+
+for (i in <span class="dv">1</span>:K) {
+    valores &lt;-<span class="st"> </span><span class="kw">myMCMC</span>(
+        <span class="dt">fun =</span> function(par)
+            <span class="kw">posterior</span>(par, <span class="dt">paramet =</span> <span class="st">&quot;phi&quot;</span>),
+        <span class="dt">mcmc =</span> <span class="dv">30000</span>,
+        <span class="dt">burnin =</span> <span class="dv">1000</span>,
+        <span class="dt">theta.init =</span> <span class="kw">log</span>(<span class="dv">5</span> +<span class="st"> </span>i),
+        <span class="dt">tune =</span> <span class="fl">0.7</span>,
+        <span class="dt">thin =</span> <span class="dv">3</span>)
+    amos[[i]] &lt;-<span class="st"> </span><span class="kw">exp</span>(valores)
+}</code></pre></div>
+<pre><code>## ==================================================
+## A taxa de aceitação foi de 0.381
+## ==================================================
+## ==================================================
+## A taxa de aceitação foi de 0.377
+## ==================================================</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Empilhando os resultados
+amostra.myMCMC &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">do.call</span>(<span class="st">&quot;cbind&quot;</span>, amos))
+amostra.myMCMC &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">stack</span>(amostra.myMCMC), <span class="dt">i =</span> <span class="kw">rep</span>(<span class="dv">1</span>:<span class="dv">9000</span>, <span class="dv">2</span>))
+
+## Exibindo os resultados
+<span class="kw">xyplot</span>(values ~<span class="st"> </span>i, <span class="dt">groups =</span> ind,
+       <span class="dt">data =</span> amostra.myMCMC, <span class="dt">type =</span> <span class="kw">c</span>(<span class="st">&quot;g&quot;</span>, <span class="st">&quot;l&quot;</span>),
+       <span class="dt">auto.key =</span> <span class="kw">list</span>(<span class="dt">column =</span> <span class="dv">2</span>, <span class="dt">lines =</span> <span class="ot">TRUE</span>, <span class="dt">points =</span> <span class="ot">FALSE</span>))</code></pre></div>
+<p><img src="05-prova_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">densityplot</span>(~values, <span class="dt">groups =</span> ind,
+            <span class="dt">axis =</span> axis.grid,
+            <span class="dt">data =</span> amostra.myMCMC, <span class="dt">type =</span> <span class="st">&quot;l&quot;</span>,
+            <span class="dt">auto.key =</span> <span class="kw">list</span>(<span class="dt">column =</span> <span class="dv">2</span>, <span class="dt">lines =</span> <span class="ot">TRUE</span>, <span class="dt">points =</span> <span class="ot">FALSE</span>))</code></pre></div>
+<p><img src="05-prova_files/figure-html/unnamed-chunk-12-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Juntando ambos
+<span class="kw">plot</span>(<span class="kw">acf</span>(amostra.myMCMC$values))</code></pre></div>
+<p><img src="05-prova_files/figure-html/unnamed-chunk-12-3.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Amostrando via MCMCpack
+K &lt;-<span class="st"> </span><span class="dv">2</span>
+amos2 &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="st">&quot;list&quot;</span>, K)
+
+for (i in <span class="dv">1</span>:K) {
+    valores &lt;-<span class="st"> </span><span class="kw">MCMCmetrop1R</span>(
+        <span class="dt">fun =</span> function(par)
+            <span class="kw">posterior</span>(par, <span class="dt">paramet =</span> <span class="st">&quot;phi&quot;</span>),
+        <span class="dt">mcmc =</span> <span class="dv">30000</span>,
+        <span class="dt">burnin =</span> <span class="dv">1000</span>,
+        <span class="dt">theta.init =</span> <span class="kw">log</span>(<span class="dv">5</span> +<span class="st"> </span>i),
+        <span class="dt">tune =</span> <span class="dv">3</span>,
+        <span class="dt">thin =</span> <span class="dv">3</span>)
+    amos2[[i]] &lt;-<span class="st"> </span><span class="kw">exp</span>(valores)
+}</code></pre></div>
+<pre><code>## 
+## 
+## @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+## The Metropolis acceptance rate was 0.37532
+## @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+## 
+## 
+## @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+## The Metropolis acceptance rate was 0.37494
+## @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Empilhando os resultados
+amostra.MCMCpack &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">do.call</span>(<span class="st">&quot;cbind&quot;</span>, amos2))
+amostra.MCMCpack &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">stack</span>(amostra.MCMCpack), <span class="dt">i =</span> <span class="kw">rep</span>(<span class="dv">1</span>:<span class="dv">10000</span>, <span class="dv">2</span>))
+
+## Exibindo os resultados
+<span class="kw">xyplot</span>(values ~<span class="st"> </span>i, <span class="dt">groups =</span> ind,
+       <span class="dt">data =</span> amostra.MCMCpack, <span class="dt">type =</span> <span class="kw">c</span>(<span class="st">&quot;g&quot;</span>, <span class="st">&quot;l&quot;</span>),
+       <span class="dt">auto.key =</span> <span class="kw">list</span>(<span class="dt">column =</span> <span class="dv">2</span>, <span class="dt">lines =</span> <span class="ot">TRUE</span>, <span class="dt">points =</span> <span class="ot">FALSE</span>))</code></pre></div>
+<p><img src="05-prova_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">densityplot</span>(~values, <span class="dt">groups =</span> ind,
+            <span class="dt">axis =</span> axis.grid,
+            <span class="dt">data =</span> amostra.MCMCpack, <span class="dt">type =</span> <span class="st">&quot;l&quot;</span>,
+            <span class="dt">auto.key =</span> <span class="kw">list</span>(<span class="dt">column =</span> <span class="dv">2</span>, <span class="dt">lines =</span> <span class="ot">TRUE</span>, <span class="dt">points =</span> <span class="ot">FALSE</span>))</code></pre></div>
+<p><img src="05-prova_files/figure-html/unnamed-chunk-13-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Juntando ambos
+<span class="kw">plot</span>(<span class="kw">acf</span>(amostra.MCMCpack$values))</code></pre></div>
+<p><img src="05-prova_files/figure-html/unnamed-chunk-13-3.png" width="672" /></p>
+<p>Como observado todas os valores paracem terem sido amostrados da mesma distribuição assim podemos empilhá-los para aproximar a posteriori</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Juntando todas as amostras geradas
+amostras &lt;-<span class="st"> </span><span class="kw">c</span>(amostra.myMCMC$values, amostra.MCMCpack$values)
+
+## Posteriori aproximada
+<span class="kw">plot</span>(<span class="kw">density</span>(amostras),
+     <span class="dt">ylab =</span> <span class="st">&quot;log-Verossimilhança&quot;</span>,
+     <span class="dt">xlab =</span> <span class="kw">expression</span>(theta))
+<span class="kw">arrows</span>(<span class="kw">mean</span>(amostras), <span class="fl">0.05</span>, tmaxip, <span class="dv">0</span>, <span class="dt">col =</span> <span class="dv">1</span>, <span class="dt">length =</span> <span class="fl">0.1</span>)
+## Verossimilhança normalizada
+<span class="kw">curve</span>(<span class="kw">veross</span>(<span class="dt">par =</span> x, <span class="dt">paramet =</span> <span class="st">&quot;theta&quot;</span>, <span class="dt">log =</span> <span class="ot">FALSE</span>)/cte,
+      <span class="dt">add =</span> <span class="ot">TRUE</span>, <span class="dt">lty =</span> <span class="dv">2</span>, <span class="dt">col =</span> <span class="dv">4</span>)
+<span class="kw">arrows</span>(tmaxi, <span class="fl">0.05</span>, tmaxi, <span class="dv">0</span>, <span class="dt">col =</span> <span class="dv">4</span>, <span class="dt">length =</span> <span class="fl">0.1</span>)
+## Priori
+<span class="kw">curve</span>(<span class="kw">dgamma</span>(x, <span class="dv">1</span>, <span class="dv">1</span>), <span class="dt">add =</span> <span class="ot">TRUE</span>, <span class="dt">lty =</span> <span class="dv">3</span>, <span class="dt">col =</span> <span class="dv">2</span>)
+
+<span class="kw">legend</span>(<span class="dt">x =</span> <span class="fl">2.5</span>, <span class="dt">y =</span> <span class="fl">0.35</span>,
+       <span class="dt">legend =</span> <span class="kw">c</span>(<span class="st">&quot;priori&quot;</span>, <span class="st">&quot;verossimilhanca&quot;</span>, <span class="st">&quot;posteriori&quot;</span>),
+       <span class="dt">lty =</span> <span class="kw">c</span>(<span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">1</span>), <span class="dt">lwd =</span> <span class="dv">2</span>, <span class="dt">col =</span> <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">1</span>), <span class="dt">bty =</span> <span class="st">&quot;n&quot;</span>)</code></pre></div>
+<p><img src="05-prova_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<div id="resumos-da-posteriori-2" class="section level3">
+<h3>Resumos da posteriori</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##----------------------------------------------------------------------
+## Resumos da posteriori
+
+## Para obter a moda
+d &lt;-<span class="st"> </span><span class="kw">density</span>(amostras)
+
+## Resumos da posteriori
+<span class="kw">rbind</span>(<span class="st">&quot;Média&quot;</span> =<span class="st"> </span><span class="kw">mean</span>(amostras),
+      <span class="st">&quot;Mediana&quot;</span> =<span class="st"> </span><span class="kw">median</span>(amostras),
+      <span class="st">&quot;Moda&quot;</span> =<span class="st"> </span>d$x[<span class="kw">which.max</span>(d$y)],
+      <span class="st">&quot;IC95% quantil&quot;</span> =<span class="st"> </span><span class="kw">paste</span>(
+          <span class="kw">round</span>(<span class="kw">quantile</span>(amostras, <span class="dt">probs =</span> <span class="kw">c</span>(<span class="fl">0.025</span>, <span class="fl">0.975</span>)), <span class="dv">3</span>),
+          <span class="dt">collapse =</span> <span class="st">&quot;; &quot;</span>),
+      <span class="st">&quot;IC95% hpd&quot;</span> =<span class="st"> </span><span class="kw">paste</span>(
+          <span class="kw">round</span>(coda::<span class="kw">HPDinterval</span>(<span class="kw">as.mcmc</span>(amostras)), <span class="dv">3</span>),
+          <span class="dt">collapse =</span> <span class="st">&quot;; &quot;</span>)
+      )</code></pre></div>
+<pre><code>##               [,1]              
+## Média         &quot;6.6816437651274&quot; 
+## Mediana       &quot;6.61751673550972&quot;
+## Moda          &quot;6.43804601042243&quot;
+## IC95% quantil &quot;4.627; 9.076&quot;    
+## IC95% hpd     &quot;4.495; 8.932&quot;</code></pre>
+</div>
+</div>
+</div>
+
+<br>
+<hr>
+<center>© Copyright 2016 Ribeiro Jr., E. E.</center>
+<br>
+
+<div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'eerj-website';
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+  </script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

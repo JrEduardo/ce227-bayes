@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Eduardo E. R. Junior - DEST/UFPR" />
+
+
+<title>Inferência Bayesiana - Análise de experimento com via inferência clássica e Bayesiana</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/yeti.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+div.sourceCode {
+  overflow-x: visible;
+}
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="_style.css" type="text/css" />
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 45px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+
+.section h2 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+.section h3 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+.section h4 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+.section h5 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+.section h6 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = false;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.9em;
+  padding-left: 5px;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+  padding-left: 10px;
+}
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Atividades
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="01-intecaovoto.html">Exemplo intenção de voto</a>
+    </li>
+    <li>
+      <a href="02-pvalor.html">Princípio da Verossimilhança</a>
+    </li>
+    <li>
+      <a href="03-gamma-jeffrey.pdf">Inferência sobre o parâmetro de forma da Gamma</a>
+    </li>
+    <li>
+      <a href="04-fbst.html">FBST - Full Bayesian Significance Test</a>
+    </li>
+    <li>
+      <a href="05-prova.html">Exemplo teórico (da avaliação)</a>
+    </li>
+    <li>
+      <a href="06-namatodes.html">Exemplos prático (análise de experimento)</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://jreduardo.github.io/">Eduardo Jr's website</a>
+</li>
+<li>
+  <a href="https://github.com/JrEduardo/ce064-ml">
+    <span class="fa fa-github-alt fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Inferência Bayesiana - Análise de experimento com via inferência clássica e Bayesiana</h1>
+<h4 class="author"><em>Eduardo E. R. Junior - DEST/UFPR</em></h4>
+<h4 class="date"><em>22 de junho de 2016</em></h4>
+
+</div>
+
+
+<div id="definicao-do-problema" class="section level1">
+<h1>Definição do problema</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(cmpreg)</code></pre></div>
+<pre><code>## Loading required package: bbmle</code></pre>
+<pre><code>## Loading required package: stats4</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(nematodes)
+<span class="kw">str</span>(nematodes)</code></pre></div>
+<pre><code>## &#39;data.frame&#39;:    94 obs. of  5 variables:
+##  $ cult: Factor w/ 19 levels &quot;A&quot;,&quot;B&quot;,&quot;C&quot;,&quot;D&quot;,..: 1 1 1 1 1 2 2 2 2 2 ...
+##  $ mfr : num  10.52 11.03 6.42 8.16 4.48 ...
+##  $ vol : int  40 40 40 40 40 40 40 40 40 40 ...
+##  $ nema: int  4 5 3 4 3 2 2 2 2 2 ...
+##  $ off : num  0.263 0.276 0.161 0.204 0.112 ...</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## help(nematodes, h = &quot;html&quot;)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##======================================================================
+## Análise de dados de nematóides
+<span class="kw">xyplot</span>(nema ~<span class="st"> </span>off, <span class="dt">groups =</span> cult,
+       <span class="dt">type =</span> <span class="kw">c</span>(<span class="st">&quot;g&quot;</span>, <span class="st">&quot;p&quot;</span>),
+       <span class="dt">data =</span> nematodes,
+       <span class="dt">auto.key =</span> <span class="kw">list</span>(
+           <span class="dt">title =</span> <span class="st">&quot;Linhagens&quot;</span>,
+           <span class="dt">cex.title =</span> <span class="dv">1</span>,
+           <span class="dt">corner =</span> <span class="kw">c</span>(<span class="fl">0.9</span>, <span class="fl">0.9</span>)
+       ))</code></pre></div>
+<p><img src="06-namatodes_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>Duas estruturas para modelagem serão consideradas * Modelar somente o efeito aleatório das linhagens, * Modelar somente o efeito fixo de <code>off</code> e aleatório das linhagens.</p>
+</div>
+<div id="modelos-em-competicao" class="section level1">
+<h1>Modelos em competição</h1>
+<ol style="list-style-type: decimal">
+<li>Modelo misto Poisson (ajustado pela maximização da verossimilhança)</li>
+<li>Modelo misto COM-Poisson (ajustado pela maximização da verossimilhança)</li>
+<li>Modelo misto Poisson (sob o paradigma Bayesiano)
+<ul>
+<li>INLA (<em>Integrated Nested Laplace Aproximation</em>)</li>
+<li>Amostragem MCMC (usando o <code>jags</code>)</li>
+</ul></li>
+<li>Modelo misto Gamma-Count (sob o paradigma Bayesiano - INLA)</li>
+</ol>
+<div id="abordagem-de-maxima-verossimilhanca" class="section level2">
+<h2>Abordagem de Máxima Verossimilhança</h2>
+<div id="modelo-misto-poisson" class="section level3">
+<h3>Modelo misto Poisson</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##----------------------------------------------------------------------
+## Com a Poisson
+<span class="kw">library</span>(lme4)</code></pre></div>
+<pre><code>## Loading required package: Matrix</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mle0 &lt;-<span class="st"> </span><span class="kw">glmer</span>(nema ~<span class="st"> </span>(<span class="dv">1</span>|cult), <span class="dt">data =</span> nematodes,
+              <span class="dt">family =</span> poisson)
+mle1 &lt;-<span class="st"> </span><span class="kw">glmer</span>(nema ~<span class="st"> </span><span class="kw">log</span>(off) +<span class="st"> </span>(<span class="dv">1</span>|cult), <span class="dt">data =</span> nematodes,
+              <span class="dt">family =</span> poisson)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Estimativas dos parametros
+## Para o modelo sem efeito fixo
+tmle0 &lt;-<span class="st"> </span><span class="kw">rbind</span>(<span class="dt">sigma =</span> <span class="kw">c</span>(<span class="kw">sqrt</span>(<span class="kw">VarCorr</span>(mle0)$cult), <span class="ot">NA</span>, <span class="ot">NA</span>),
+               <span class="kw">summary</span>(mle0)$coef[, -<span class="dv">4</span>])
+<span class="kw">rownames</span>(tmle0)[<span class="dv">2</span>] &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;(Intercept)&quot;</span>)
+tmle0</code></pre></div>
+<pre><code>##             Estimate Std. Error  z value
+## sigma       0.759144         NA       NA
+## (Intercept) 1.760503  0.1808152 9.736474</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Para o modelo com efeito fixo
+tmle1 &lt;-<span class="st"> </span><span class="kw">rbind</span>(<span class="dt">sigma =</span> <span class="kw">c</span>(<span class="kw">sqrt</span>(<span class="kw">VarCorr</span>(mle1)$cult), <span class="ot">NA</span>, <span class="ot">NA</span>),
+               <span class="kw">summary</span>(mle1)$coef[, -<span class="dv">4</span>])
+tmle1</code></pre></div>
+<pre><code>##              Estimate Std. Error  z value
+## sigma       0.7310786         NA       NA
+## (Intercept) 2.1562623 0.23278215 9.263005
+## log(off)    0.1620083 0.06397819 2.532242</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Predição dos efeitos aleatórios
+ranef.mle0 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">ef =</span> <span class="kw">ranef</span>(mle0)$cult[, <span class="dv">1</span>], <span class="dt">m =</span> <span class="st">&quot;mle0&quot;</span>)
+ranef.mle1 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">ef =</span> <span class="kw">ranef</span>(mle1)$cult[, <span class="dv">1</span>], <span class="dt">m =</span> <span class="st">&quot;mle1&quot;</span>)
+ranef.mle &lt;-<span class="st"> </span><span class="kw">rbind</span>(ranef.mle0, ranef.mle1)
+
+<span class="kw">densityplot</span>(~ef, <span class="dt">groups =</span> m,
+            <span class="dt">data =</span> ranef.mle,
+            <span class="dt">axis =</span> axis.grid,
+            <span class="dt">auto.key =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<p><img src="06-namatodes_files/figure-html/ranefmle-1.png" width="672" /></p>
+</div>
+<div id="modelo-misto-com-poisson" class="section level3">
+<h3>Modelo misto COM-Poisson</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##----------------------------------------------------------------------
+## Com a COM-Poisson
+## library(cmpreg)
+## cmp0 &lt;- cmp(nema ~ (1|cult), data = nematodes, sumto = 50)
+## cmp1 &lt;- cmp(nema ~ log(off) + (1|cult), data = nematodes,
+##             sumto = 50)
+<span class="kw">load</span>(<span class="st">&quot;mixedcmp_models.rda&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Estimativas dos parametros
+## Para o modelo sem efeito fixo
+tcmp0 &lt;-<span class="st"> </span><span class="kw">rbind</span>(<span class="dt">sigma =</span> <span class="kw">c</span>(<span class="kw">exp</span>(<span class="kw">coef</span>(cmp0)[<span class="dv">2</span>]), <span class="ot">NA</span>, <span class="ot">NA</span>),
+               <span class="kw">summary</span>(cmp0)@coef[-<span class="dv">2</span>, -<span class="dv">4</span>])
+<span class="kw">colnames</span>(tcmp0) &lt;-<span class="st"> </span><span class="kw">colnames</span>(<span class="kw">summary</span>(cmp0)@coef[, -<span class="dv">4</span>])
+tcmp0</code></pre></div>
+<pre><code>##              Estimate Std. Error   z value
+## sigma       0.8749274         NA        NA
+## phi         0.1528742  0.1792980 0.8526264
+## (Intercept) 2.0683427  0.4408113 4.6921272</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Para o modelo com efeito fixo
+tcmp1 &lt;-<span class="st"> </span><span class="kw">rbind</span>(<span class="dt">sigma =</span> <span class="kw">c</span>(<span class="kw">exp</span>(<span class="kw">coef</span>(cmp1)[<span class="dv">2</span>]), <span class="ot">NA</span>, <span class="ot">NA</span>),
+               <span class="kw">summary</span>(cmp1)@coef[-<span class="dv">2</span>, -<span class="dv">4</span>])
+<span class="kw">colnames</span>(tcmp1) &lt;-<span class="st"> </span><span class="kw">colnames</span>(<span class="kw">summary</span>(cmp1)@coef[, -<span class="dv">4</span>])
+tcmp1</code></pre></div>
+<pre><code>##              Estimate Std. Error  z value
+## sigma       0.9161159         NA       NA
+## phi         0.2409883 0.17683814 1.362762
+## (Intercept) 2.7523952 0.56492336 4.872157
+## log(off)    0.1982931 0.07807116 2.539902</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Predição dos efeitos aleatórios
+ranef.cmp0 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">ef =</span> <span class="kw">mixedcmp.ranef</span>(cmp0), <span class="dt">m =</span> <span class="st">&quot;cmp0&quot;</span>)
+ranef.cmp1 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">ef =</span> <span class="kw">mixedcmp.ranef</span>(cmp1), <span class="dt">m =</span> <span class="st">&quot;cmp1&quot;</span>)
+ranef.cmp &lt;-<span class="st"> </span><span class="kw">rbind</span>(ranef.cmp0, ranef.cmp1)
+
+<span class="kw">densityplot</span>(~ef, <span class="dt">groups =</span> m,
+            <span class="dt">data =</span> ranef.cmp,
+            <span class="dt">axis =</span> axis.grid,
+            <span class="dt">auto.key =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<p><img src="06-namatodes_files/figure-html/ranefcmp-1.png" width="672" /></p>
+</div>
+</div>
+<div id="abordagem-bayesiana-com-inla" class="section level2">
+<h2>Abordagem Bayesiana com INLA</h2>
+<div id="modelo-misto-poisson-1" class="section level3">
+<h3>Modelo misto Poisson</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##----------------------------------------------------------------------
+## Com a poisson
+<span class="kw">library</span>(INLA)</code></pre></div>
+<pre><code>## Loading required package: sp</code></pre>
+<pre><code>## Loading required package: splines</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">inla0 &lt;-<span class="st"> </span><span class="kw">inla</span>(nema ~<span class="st"> </span><span class="dv">1</span> +<span class="st"> </span><span class="kw">f</span>(cult, <span class="dt">model =</span> <span class="st">&quot;iid&quot;</span>),
+              <span class="dt">data =</span> nematodes, <span class="dt">family =</span> <span class="st">&quot;poisson&quot;</span>)
+inla1 &lt;-<span class="st"> </span><span class="kw">inla</span>(nema ~<span class="st"> </span><span class="kw">log</span>(off) +<span class="st"> </span><span class="kw">f</span>(cult, <span class="dt">model =</span> <span class="st">&quot;iid&quot;</span>),
+              <span class="dt">data =</span> nematodes, <span class="dt">family =</span> <span class="st">&quot;poisson&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Estimativas dos parametros
+## Para o modelo sem efeito fixo
+tinla0 &lt;-<span class="st"> </span><span class="kw">rbind</span>(<span class="kw">c</span>(<span class="kw">sqrt</span>(<span class="dv">1</span>/<span class="kw">summary</span>(inla0)$hyperpar[<span class="dv">1</span>]), <span class="kw">rep</span>(<span class="ot">NA</span>, <span class="dv">6</span>)),
+                <span class="kw">summary</span>(inla0)$fixed)
+<span class="kw">colnames</span>(tinla0) &lt;-<span class="st"> </span><span class="kw">colnames</span>(<span class="kw">summary</span>(inla0)$fixed)
+<span class="kw">rownames</span>(tinla0)[<span class="dv">1</span>] &lt;-<span class="st"> &quot;sigma&quot;</span>
+tinla0</code></pre></div>
+<pre><code>##             mean     sd     0.025quant 0.5quant 0.975quant mode   kld
+## sigma       0.729325 NA     NA         NA       NA         NA     NA 
+## (Intercept) 1.7634   0.1793 1.4051     1.7647   2.1139     1.7671 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Para o modelo com efeito de off
+tinla1 &lt;-<span class="st"> </span><span class="kw">rbind</span>(<span class="kw">c</span>(<span class="kw">sqrt</span>(<span class="dv">1</span>/<span class="kw">summary</span>(inla1)$hyperpar[<span class="dv">1</span>]), <span class="kw">rep</span>(<span class="ot">NA</span>, <span class="dv">6</span>)),
+                <span class="kw">summary</span>(inla1)$fixed)
+<span class="kw">colnames</span>(tinla1) &lt;-<span class="st"> </span><span class="kw">colnames</span>(<span class="kw">summary</span>(inla1)$fixed)
+<span class="kw">rownames</span>(tinla1)[<span class="dv">1</span>] &lt;-<span class="st"> &quot;sigma&quot;</span>
+tinla1</code></pre></div>
+<pre><code>##             mean      sd     0.025quant 0.5quant 0.975quant mode   kld
+## sigma       0.7018797 NA     NA         NA       NA         NA     NA 
+## (Intercept) 2.1629    0.2321 1.7015     2.1646   2.6147     2.1678 0  
+## log(off)    0.1632    0.0643 0.0374     0.163    0.2898     0.1626 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Predição para os efeitos aleatórios
+ranef.inla0 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">ef =</span> inla0$summary.random$cult$mean,
+                          <span class="dt">m =</span> <span class="st">&quot;inla0&quot;</span>)
+ranef.inla1 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">ef =</span> inla1$summary.random$cult$mean,
+                          <span class="dt">m =</span> <span class="st">&quot;inla1&quot;</span>)
+ranef.inla &lt;-<span class="st"> </span><span class="kw">rbind</span>(ranef.inla0, ranef.inla1)
+
+<span class="kw">densityplot</span>(~ef, <span class="dt">groups =</span> m,
+            <span class="dt">data =</span> ranef.inla,
+            <span class="dt">axis =</span> axis.grid,
+            <span class="dt">auto.key =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<p><img src="06-namatodes_files/figure-html/ranefinla-1.png" width="672" /></p>
+</div>
+<div id="modelo-misto-gamma-count" class="section level3">
+<h3>Modelo misto Gamma-Count</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##----------------------------------------------------------------------
+## Com a Gamma-Count
+inlag0 &lt;-<span class="st"> </span><span class="kw">inla</span>(nema ~<span class="st"> </span><span class="dv">1</span> +<span class="st"> </span><span class="kw">f</span>(cult, <span class="dt">model =</span> <span class="st">&quot;iid&quot;</span>),
+               <span class="dt">data =</span> nematodes, <span class="dt">family =</span> <span class="st">&quot;gammacount&quot;</span>)</code></pre></div>
+<pre><code>## Warning in inla.model.properties.generic(inla.trim.family(model), (mm[names(mm) == : Model &#39;gammacount&#39; in section &#39;likelihood&#39; is marked as &#39;experimental&#39;; changes may appear at any time.
+##   Use this model with extra care!!! Further warnings are disabled.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">inlag1 &lt;-<span class="st"> </span><span class="kw">inla</span>(nema ~<span class="st"> </span><span class="kw">log</span>(off) +<span class="st"> </span><span class="kw">f</span>(cult, <span class="dt">model =</span> <span class="st">&quot;iid&quot;</span>),
+               <span class="dt">data =</span> nematodes, <span class="dt">family =</span> <span class="st">&quot;gammacount&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Estimativas dos parametros
+## Para o modelo sem efeito fixo
+tinlag0 &lt;-<span class="st"> </span><span class="kw">rbind</span>(<span class="kw">c</span>(<span class="kw">sqrt</span>(<span class="dv">1</span>/<span class="kw">summary</span>(inlag0)$hyperpar[<span class="dv">2</span>, <span class="dv">1</span>]), <span class="kw">rep</span>(<span class="ot">NA</span>, <span class="dv">6</span>)),
+                 <span class="kw">c</span>(<span class="kw">summary</span>(inlag0)$hyperpar[<span class="dv">2</span>, <span class="dv">1</span>], <span class="kw">rep</span>(<span class="ot">NA</span>, <span class="dv">6</span>)),
+                 <span class="kw">summary</span>(inlag0)$fixed)
+<span class="kw">colnames</span>(tinlag0) &lt;-<span class="st"> </span><span class="kw">colnames</span>(<span class="kw">summary</span>(inlag0)$fixed)
+<span class="kw">rownames</span>(tinlag0) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;sigma&quot;</span>, <span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;(Intercept)&quot;</span>)
+tinlag0</code></pre></div>
+<pre><code>##                  mean     sd 0.025quant 0.5quant 0.975quant   mode kld
+## sigma       0.7262411     NA         NA       NA         NA     NA  NA
+## alpha       1.8960000     NA         NA       NA         NA     NA  NA
+## (Intercept) 1.7718000 0.1803     1.4084   1.7737     2.1239 1.7774   0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Para o modelo com efeito de off
+tinlag1 &lt;-<span class="st"> </span><span class="kw">rbind</span>(<span class="kw">c</span>(<span class="kw">sqrt</span>(<span class="dv">1</span>/<span class="kw">summary</span>(inlag1)$hyperpar[<span class="dv">2</span>, <span class="dv">1</span>]), <span class="kw">rep</span>(<span class="ot">NA</span>, <span class="dv">6</span>)),
+                 <span class="kw">c</span>(<span class="kw">summary</span>(inlag1)$hyperpar[<span class="dv">2</span>, <span class="dv">1</span>], <span class="kw">rep</span>(<span class="ot">NA</span>, <span class="dv">6</span>)),
+                 <span class="kw">summary</span>(inlag1)$fixed)
+<span class="kw">colnames</span>(tinlag1) &lt;-<span class="st"> </span><span class="kw">colnames</span>(<span class="kw">summary</span>(inlag1)$fixed)
+<span class="kw">rownames</span>(tinlag1) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;sigma&quot;</span>, <span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;(Intercept)&quot;</span>, <span class="st">&quot;log(off)&quot;</span>)
+tinlag1</code></pre></div>
+<pre><code>##                  mean     sd 0.025quant 0.5quant 0.975quant   mode kld
+## sigma       0.6989248     NA         NA       NA         NA     NA  NA
+## alpha       2.0471000     NA         NA       NA         NA     NA  NA
+## (Intercept) 2.1668000 0.2251     1.7161   2.1691     2.6041 2.1735   0
+## log(off)    0.1598000 0.0598     0.0433   0.1593     0.2785 0.1585   0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Predição para os efeitos aleatórios
+ranef.inlag0 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">ef =</span> inlag0$summary.random$cult$mean,
+                          <span class="dt">m =</span> <span class="st">&quot;inlag0&quot;</span>)
+ranef.inlag1 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">ef =</span> inlag1$summary.random$cult$mean,
+                          <span class="dt">m =</span> <span class="st">&quot;inlag1&quot;</span>)
+ranef.inlag &lt;-<span class="st"> </span><span class="kw">rbind</span>(ranef.inlag0, ranef.inlag1)
+
+<span class="kw">densityplot</span>(~ef, <span class="dt">groups =</span> m,
+            <span class="dt">data =</span> ranef.inlag,
+            <span class="dt">axis =</span> axis.grid,
+            <span class="dt">auto.key =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<p><img src="06-namatodes_files/figure-html/ranefinlag-1.png" width="672" /></p>
+</div>
+</div>
+<div id="abordagem-bayesiana-por-simulacao" class="section level2">
+<h2>Abordagem Bayesiana por simulação</h2>
+<p>Funções para facilitar a análise das amostras da simulação.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##======================================================================
+## Por amostragem MCMC
+<span class="kw">library</span>(rjags)</code></pre></div>
+<pre><code>## Linked to JAGS 4.2.0</code></pre>
+<pre><code>## Loaded modules: basemod,bugs</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">select_pars &lt;-<span class="st"> </span>function(sample, pars) {
+    if (!<span class="kw">is.mcmc.list</span>(sample)) {
+        sample &lt;-<span class="st"> </span><span class="kw">as.mcmc.list</span>(sample)
+    }
+    out &lt;-<span class="st"> </span><span class="kw">lapply</span>(sample, function(x) {
+        sel &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">[[0-9]+</span><span class="ch">\\</span><span class="st">]&quot;</span>, <span class="dt">repl =</span> <span class="st">&quot;&quot;</span>, <span class="kw">colnames</span>(x))
+        x[, sel %in%<span class="st"> </span>pars]
+    })
+    <span class="kw">return</span>(<span class="kw">as.mcmc</span>(out))
+}</code></pre></div>
+<div id="modelo-misto-poisson-2" class="section level3">
+<h3>Modelo misto Poisson</h3>
+<p>Abaixo define-se o modelo conforme sintaxe do JAGS</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Com a Poisson (Modelo sem efeito de covariavel)
+poisRE0 &lt;-
+<span class="st">&quot; model {</span>
+<span class="st">    ## Log-verossimilhanca</span>
+<span class="st">    for (i in 1:m) {</span>
+<span class="st">      u[i] ~ dnorm(0, tau.e)</span>
+<span class="st">    }</span>
+<span class="st">    for (j in 1:n) {</span>
+<span class="st">      log(mu[j]) &lt;- b0 + u[ind[j]]</span>
+<span class="st">      y[j] ~ dpois(mu[j])</span>
+<span class="st">    }</span>
+<span class="st">    ## Prioris</span>
+<span class="st">    b0 ~ dnorm(0, 0.0001)</span>
+<span class="st">    tau.e ~ dgamma(0.001, 0.001)</span>
+<span class="st">    sigma &lt;- sqrt(1/tau.e)</span>
+<span class="st">}</span>
+<span class="st">&quot;</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Modelo sem efeito de covariavel
+data0 &lt;-<span class="st"> </span><span class="kw">with</span>(
+    nematodes,
+    <span class="kw">list</span>(<span class="st">&quot;y&quot;</span> =<span class="st"> </span>nema,
+         <span class="st">&quot;n&quot;</span> =<span class="st"> </span><span class="kw">length</span>(nema),
+         <span class="st">&quot;m&quot;</span> =<span class="st"> </span><span class="kw">length</span>(<span class="kw">unique</span>(cult)),
+         <span class="st">&quot;ind&quot;</span> =<span class="st"> </span><span class="kw">as.numeric</span>(cult))
+)
+
+jagsmodel0 &lt;-<span class="st"> </span><span class="kw">jags.model</span>(
+    <span class="kw">textConnection</span>(poisRE0),
+    <span class="dt">data =</span> data0,
+    <span class="dt">n.chains =</span> <span class="dv">3</span>,
+    <span class="dt">n.adapt =</span> <span class="dv">1000</span>
+)
+
+amostra0 &lt;-<span class="st"> </span><span class="kw">coda.samples</span>(
+    jagsmodel0, <span class="kw">c</span>(<span class="st">&quot;b0&quot;</span>, <span class="st">&quot;sigma&quot;</span>, <span class="st">&quot;u&quot;</span>, <span class="st">&quot;mu&quot;</span>),
+    <span class="dt">n.iter =</span> <span class="dv">10000</span>, <span class="dt">thin =</span> <span class="dv">10</span>,
+    <span class="dt">n.chains =</span> <span class="dv">3</span>,
+    <span class="dt">n.adapt =</span> <span class="dv">1000</span>)</code></pre></div>
+<p>Avaliação das cadeias</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Seleciona apenas os parâmetros amostrados do modelo
+ampars0 &lt;-<span class="st"> </span><span class="kw">select_pars</span>(amostra0, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;b0&quot;</span>, <span class="st">&quot;sigma&quot;</span>))
+
+## Gráficos de diagnóstico
+<span class="kw">xyplot</span>(ampars0, <span class="dt">axis =</span> axis.grid, <span class="dt">aspect =</span> <span class="st">&quot;fill&quot;</span>)</code></pre></div>
+<p><img src="06-namatodes_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">densityplot</span>(ampars0, <span class="dt">axis =</span> axis.grid, <span class="dt">aspect =</span> <span class="st">&quot;fill&quot;</span>)</code></pre></div>
+<p><img src="06-namatodes_files/figure-html/unnamed-chunk-10-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">acfplot</span>(ampars0, <span class="dt">type =</span> <span class="st">&quot;h&quot;</span>, <span class="dt">axis =</span> axis.grid, <span class="dt">aspect =</span> <span class="st">&quot;fill&quot;</span>)</code></pre></div>
+<p><img src="06-namatodes_files/figure-html/unnamed-chunk-10-3.png" width="672" /></p>
+<p>Resumos da posteriori</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Resumos da posteriori (para os parametros b0 e sigma)
+
+ampars0 &lt;-<span class="st"> </span><span class="kw">as.mcmc</span>(<span class="kw">do.call</span>(rbind, ampars0))
+
+(resumo0 &lt;-<span class="st"> </span><span class="kw">summary</span>(ampars0)$statistics)</code></pre></div>
+<pre><code>##            Mean        SD    Naive SE Time-series SE
+## b0    1.7429911 0.1888004 0.003447007    0.010060598
+## sigma 0.8183629 0.1556370 0.002841529    0.002932447</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">HPDinterval</span>(ampars0)</code></pre></div>
+<pre><code>##           lower    upper
+## b0    1.3621824 2.112360
+## sigma 0.5282123 1.113475
+## attr(,&quot;Probability&quot;)
+## [1] 0.95</code></pre>
+<p>Predição dos efeitos aleatórios</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">amranef0 &lt;-<span class="st"> </span><span class="kw">select_pars</span>(amostra0, <span class="dt">pars =</span> <span class="st">&quot;u&quot;</span>)
+amranef0 &lt;-<span class="st"> </span><span class="kw">as.mcmc</span>(<span class="kw">do.call</span>(rbind, amranef0))
+ranef.jags0 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(
+    <span class="dt">ef =</span> <span class="kw">summary</span>(amranef0)$statistics[, <span class="dv">1</span>],
+    <span class="dt">m =</span> <span class="st">&quot;jags0&quot;</span>)
+
+<span class="kw">qqmath</span>(~ef, <span class="dt">data =</span> ranef.inlag0,
+       <span class="dt">axis =</span> axis.grid,
+       <span class="dt">panel =</span> function(...) {
+           <span class="kw">panel.qqmath</span>(...)
+           <span class="kw">panel.qqmathline</span>(..., <span class="dt">lty =</span> <span class="dv">2</span>, <span class="dt">col =</span> <span class="st">&quot;gray50&quot;</span>)
+       })</code></pre></div>
+<p><img src="06-namatodes_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>Define o modelo com o efeito de covariável</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Com a Poisson (modelo com covariável)
+poisRE1 &lt;-
+<span class="st">&quot; model {</span>
+<span class="st">    ## Log-verossimilhanca</span>
+<span class="st">    for (i in 1:m) {</span>
+<span class="st">      u[i] ~ dnorm(0, tau.e)</span>
+<span class="st">    }</span>
+<span class="st">    for (j in 1:n) {</span>
+<span class="st">      log(mu[j]) &lt;- b0 + b1 * cov[j] + u[ind[j]]</span>
+<span class="st">      y[j] ~ dpois(mu[j])</span>
+<span class="st">    }</span>
+<span class="st">    ## Prioris</span>
+<span class="st">    b0 ~ dnorm(0, 0.0001)</span>
+<span class="st">    b1 ~ dnorm(0, 0.0001)</span>
+<span class="st">    tau.e ~ dgamma(0.001, 0.001)</span>
+<span class="st">    sigma &lt;- sqrt(1/tau.e)</span>
+<span class="st">}</span>
+<span class="st">&quot;</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Modelo com efeito de covariavel
+data1 &lt;-<span class="st"> </span><span class="kw">with</span>(
+    nematodes,
+    <span class="kw">list</span>(<span class="st">&quot;y&quot;</span> =<span class="st"> </span>nema,
+         <span class="st">&quot;cov&quot;</span> =<span class="st"> </span><span class="kw">log</span>(off),
+         <span class="st">&quot;n&quot;</span> =<span class="st"> </span><span class="kw">length</span>(nema),
+         <span class="st">&quot;m&quot;</span> =<span class="st"> </span><span class="kw">length</span>(<span class="kw">unique</span>(cult)),
+         <span class="st">&quot;ind&quot;</span> =<span class="st"> </span><span class="kw">as.numeric</span>(cult))
+)
+
+jagsmodel1 &lt;-<span class="st"> </span><span class="kw">jags.model</span>(
+    <span class="kw">textConnection</span>(poisRE1),
+    <span class="dt">data =</span> data1,
+    <span class="dt">n.chains =</span> <span class="dv">3</span>,
+    <span class="dt">n.adapt =</span> <span class="dv">1000</span>
+)
+
+amostra1 &lt;-<span class="st"> </span><span class="kw">coda.samples</span>(
+    jagsmodel1, <span class="kw">c</span>(<span class="st">&quot;b0&quot;</span>, <span class="st">&quot;b1&quot;</span>, <span class="st">&quot;sigma&quot;</span>, <span class="st">&quot;u&quot;</span>, <span class="st">&quot;mu&quot;</span>),
+    <span class="dt">n.iter =</span> <span class="dv">15000</span>, <span class="dt">thin =</span> <span class="dv">15</span>,
+    <span class="dt">n.chains =</span> <span class="dv">3</span>,
+    <span class="dt">n.adapt =</span> <span class="dv">1000</span>)</code></pre></div>
+<p>Avaliação da cadeia</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Avaliação das cadeias
+ampars1 &lt;-<span class="st"> </span><span class="kw">select_pars</span>(amostra1, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;b0&quot;</span>, <span class="st">&quot;b1&quot;</span>, <span class="st">&quot;sigma&quot;</span>))
+
+<span class="kw">xyplot</span>(ampars1, <span class="dt">axis =</span> axis.grid, <span class="dt">aspect =</span> <span class="st">&quot;fill&quot;</span>)</code></pre></div>
+<p><img src="06-namatodes_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">densityplot</span>(ampars1, <span class="dt">axis =</span> axis.grid, <span class="dt">aspect =</span> <span class="st">&quot;fill&quot;</span>)</code></pre></div>
+<p><img src="06-namatodes_files/figure-html/unnamed-chunk-14-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">acfplot</span>(ampars1, <span class="dt">type =</span> <span class="st">&quot;h&quot;</span>, <span class="dt">axis =</span> axis.grid, <span class="dt">aspect =</span> <span class="st">&quot;fill&quot;</span>)</code></pre></div>
+<p><img src="06-namatodes_files/figure-html/unnamed-chunk-14-3.png" width="672" /></p>
+<p>Resumos da posteriori</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Resumos da posteriori (para os parametros b0, b1 e sigma)
+
+ampars1 &lt;-<span class="st"> </span><span class="kw">as.mcmc</span>(<span class="kw">do.call</span>(rbind, ampars1))
+
+(resumo1 &lt;-<span class="st"> </span><span class="kw">summary</span>(ampars1)$statistics)</code></pre></div>
+<pre><code>##            Mean         SD    Naive SE Time-series SE
+## b0    2.1445086 0.23854378 0.004355194     0.01121614
+## b1    0.1586287 0.06292222 0.001148797     0.00204875
+## sigma 0.7884180 0.15568930 0.002842485     0.00309550</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">HPDinterval</span>(ampars1)</code></pre></div>
+<pre><code>##            lower     upper
+## b0    1.65203156 2.6032257
+## b1    0.03478347 0.2826243
+## sigma 0.51363772 1.0971334
+## attr(,&quot;Probability&quot;)
+## [1] 0.95</code></pre>
+<p>Predição dos efeitos aleatórios</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Predição dos efeitos aleatórios
+amranef1 &lt;-<span class="st"> </span><span class="kw">select_pars</span>(amostra1, <span class="dt">pars =</span> <span class="st">&quot;u&quot;</span>)
+amranef1 &lt;-<span class="st"> </span><span class="kw">as.mcmc</span>(<span class="kw">do.call</span>(rbind, amranef1))
+ranef.jags1 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(
+    <span class="dt">ef =</span> <span class="kw">summary</span>(amranef1)$statistics[, <span class="dv">1</span>],
+    <span class="dt">m =</span> <span class="st">&quot;jags1&quot;</span>)
+
+<span class="kw">qqmath</span>(~ef, <span class="dt">data =</span> ranef.inlag1,
+       <span class="dt">axis =</span> axis.grid,
+       <span class="dt">panel =</span> function(...) {
+           <span class="kw">panel.qqmath</span>(...)
+           <span class="kw">panel.qqmathline</span>(..., <span class="dt">lty =</span> <span class="dv">2</span>, <span class="dt">col =</span> <span class="st">&quot;gray50&quot;</span>)
+       })</code></pre></div>
+<p><img src="06-namatodes_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p>Comparando os efeitos aleatórios</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##-------------------------------------------
+## Empilhando os efeitos aleatórios
+ranef.jags &lt;-<span class="st"> </span><span class="kw">rbind</span>(ranef.jags0, ranef.jags1)
+
+<span class="kw">densityplot</span>(~ef, <span class="dt">groups =</span> m,
+            <span class="dt">data =</span> ranef.jags,
+            <span class="dt">axis =</span> axis.grid,
+            <span class="dt">auto.key =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<p><img src="06-namatodes_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+</div>
+</div>
+<div id="comparacao" class="section level2">
+<h2>Comparação</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tmle0</code></pre></div>
+<pre><code>##             Estimate Std. Error  z value
+## sigma       0.759144         NA       NA
+## (Intercept) 1.760503  0.1808152 9.736474</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tcmp0</code></pre></div>
+<pre><code>##              Estimate Std. Error   z value
+## sigma       0.8749274         NA        NA
+## phi         0.1528742  0.1792980 0.8526264
+## (Intercept) 2.0683427  0.4408113 4.6921272</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tinla0</code></pre></div>
+<pre><code>##             mean     sd     0.025quant 0.5quant 0.975quant mode   kld
+## sigma       0.729325 NA     NA         NA       NA         NA     NA 
+## (Intercept) 1.7634   0.1793 1.4051     1.7647   2.1139     1.7671 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tinlag0</code></pre></div>
+<pre><code>##                  mean     sd 0.025quant 0.5quant 0.975quant   mode kld
+## sigma       0.7262411     NA         NA       NA         NA     NA  NA
+## alpha       1.8960000     NA         NA       NA         NA     NA  NA
+## (Intercept) 1.7718000 0.1803     1.4084   1.7737     2.1239 1.7774   0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">resumo0</code></pre></div>
+<pre><code>##            Mean        SD    Naive SE Time-series SE
+## b0    1.7429911 0.1888004 0.003447007    0.010060598
+## sigma 0.8183629 0.1556370 0.002841529    0.002932447</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tmle1</code></pre></div>
+<pre><code>##              Estimate Std. Error  z value
+## sigma       0.7310786         NA       NA
+## (Intercept) 2.1562623 0.23278215 9.263005
+## log(off)    0.1620083 0.06397819 2.532242</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tcmp1</code></pre></div>
+<pre><code>##              Estimate Std. Error  z value
+## sigma       0.9161159         NA       NA
+## phi         0.2409883 0.17683814 1.362762
+## (Intercept) 2.7523952 0.56492336 4.872157
+## log(off)    0.1982931 0.07807116 2.539902</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tinla1</code></pre></div>
+<pre><code>##             mean      sd     0.025quant 0.5quant 0.975quant mode   kld
+## sigma       0.7018797 NA     NA         NA       NA         NA     NA 
+## (Intercept) 2.1629    0.2321 1.7015     2.1646   2.6147     2.1678 0  
+## log(off)    0.1632    0.0643 0.0374     0.163    0.2898     0.1626 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tinlag1</code></pre></div>
+<pre><code>##                  mean     sd 0.025quant 0.5quant 0.975quant   mode kld
+## sigma       0.6989248     NA         NA       NA         NA     NA  NA
+## alpha       2.0471000     NA         NA       NA         NA     NA  NA
+## (Intercept) 2.1668000 0.2251     1.7161   2.1691     2.6041 2.1735   0
+## log(off)    0.1598000 0.0598     0.0433   0.1593     0.2785 0.1585   0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">resumo1</code></pre></div>
+<pre><code>##            Mean         SD    Naive SE Time-series SE
+## b0    2.1445086 0.23854378 0.004355194     0.01121614
+## b1    0.1586287 0.06292222 0.001148797     0.00204875
+## sigma 0.7884180 0.15568930 0.002842485     0.00309550</code></pre>
+</div>
+</div>
+
+<br>
+<hr>
+<center>© Copyright 2016 Ribeiro Jr., E. E.</center>
+<br>
+
+<div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'eerj-website';
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+  </script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
