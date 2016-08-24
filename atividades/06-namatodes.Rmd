@@ -254,9 +254,7 @@ densityplot(~ef, groups = m,
 
 ## Abordagem Bayesiana por simulação ##
 
-### Modelo misto Poisson ###
-
-Abaixo define-se o modelo conforme sintaxe do JAGS
+Funções para facilitar a análise das amostras da simulação.
 
 ```{r}
 
@@ -264,9 +262,128 @@ Abaixo define-se o modelo conforme sintaxe do JAGS
 ## Por amostragem MCMC
 library(rjags)
 
+select_pars <- function(sample, pars) {
+    if (!is.mcmc.list(sample)) {
+        sample <- as.mcmc.list(sample)
+    }
+    out <- lapply(sample, function(x) {
+        sel <- gsub("\\[[0-9]+\\]", repl = "", colnames(x))
+        x[, sel %in% pars]
+    })
+    return(as.mcmc(out))
+}
+
+
+```
+
+### Modelo misto Poisson ###
+
+Abaixo define-se o modelo conforme sintaxe do JAGS
+
+```{r}
+
 ##-------------------------------------------
-## Com a Poisson
-cat(
+## Com a Poisson (Modelo sem efeito de covariavel)
+poisRE0 <-
+" model {
+    ## Log-verossimilhanca
+    for (i in 1:m) {
+      u[i] ~ dnorm(0, tau.e)
+    }
+    for (j in 1:n) {
+      log(mu[j]) <- b0 + u[ind[j]]
+      y[j] ~ dpois(mu[j])
+    }
+    ## Prioris
+    b0 ~ dnorm(0, 0.0001)
+    tau.e ~ dgamma(0.001, 0.001)
+    sigma <- sqrt(1/tau.e)
+}
+"
+
+```
+
+```{r fitmcmc0, cache=FALSE, results="hide"}
+
+##-------------------------------------------
+## Modelo sem efeito de covariavel
+data0 <- with(
+    nematodes,
+    list("y" = nema,
+         "n" = length(nema),
+         "m" = length(unique(cult)),
+         "ind" = as.numeric(cult))
+)
+
+jagsmodel0 <- jags.model(
+    textConnection(poisRE0),
+    data = data0,
+    n.chains = 3,
+    n.adapt = 1000
+)
+
+amostra0 <- coda.samples(
+    jagsmodel0, c("b0", "sigma", "u", "mu"),
+    n.iter = 10000, thin = 10,
+    n.chains = 3,
+    n.adapt = 1000)
+
+```
+
+Avaliação das cadeias
+
+```{r}
+
+## Seleciona apenas os parâmetros amostrados do modelo
+ampars0 <- select_pars(amostra0, pars = c("b0", "sigma"))
+
+## Gráficos de diagnóstico
+xyplot(ampars0, axis = axis.grid, aspect = "fill")
+densityplot(ampars0, axis = axis.grid, aspect = "fill")
+acfplot(ampars0, type = "h", axis = axis.grid, aspect = "fill")
+
+```
+
+Resumos da posteriori
+
+```{r}
+
+##-------------------------------------------
+## Resumos da posteriori (para os parametros b0 e sigma)
+
+ampars0 <- as.mcmc(do.call(rbind, ampars0))
+
+(resumo0 <- summary(ampars0)$statistics)
+HPDinterval(ampars0)
+
+```
+
+Predição dos efeitos aleatórios
+
+```{r}
+
+amranef0 <- select_pars(amostra0, pars = "u")
+amranef0 <- as.mcmc(do.call(rbind, amranef0))
+ranef.jags0 <- data.frame(
+    ef = summary(amranef0)$statistics[, 1],
+    m = "jags0")
+
+qqmath(~ef, data = ranef.inlag0,
+       axis = axis.grid,
+       panel = function(...) {
+           panel.qqmath(...)
+           panel.qqmathline(..., lty = 2, col = "gray50")
+       })
+
+```
+
+Define o modelo com o efeito de covariável
+
+```{r}
+
+##-------------------------------------------
+## Com a Poisson (modelo com covariável)
+poisRE1 <-
 " model {
     ## Log-verossimilhanca
     for (i in 1:m) {
@@ -282,76 +399,10 @@ cat(
     tau.e ~ dgamma(0.001, 0.001)
     sigma <- sqrt(1/tau.e)
 }
-", file = "poisRE.modelo")
-
-
-```
-
-```{r fitmcmc0, cache=FALSE, results="hide"}
-
-##-------------------------------------------
-## Modelo sem efeito de covariavel
-data0 <- with(
-    nematodes,
-    list("y" = nema,
-         "cov" = rep(0, length(nema)),
-         "n" = length(nema),
-         "m" = length(unique(cult)),
-         "ind" = as.numeric(cult))
-)
-
-jagsmodel0 <- jags.model(
-    "poisRE.modelo",
-    data = data0,
-    n.chains = 3,
-    n.adapt = 1000
-)
-
-amostra0 <- coda.samples(
-    jagsmodel0, c("b0", "sigma"),
-    n.iter = 10000, thin = 10,
-    n.chains = 3,
-    n.adapt = 1000)
+"
 
 ```
 
-Avaliação das cadeias
-
-```{r}
-
-xyplot(amostra0, axis = axis.grid, aspect = "fill")
-densityplot(amostra0, axis = axis.grid, aspect = "fill")
-acfplot(amostra0, type = "h", axis = axis.grid, aspect = "fill")
-
-```
-
-Predição dos efeitos
-
-```{r mcmc0, cache=FALSE, results="hide"}
-
-##-------------------------------------------
-## Predição dos efeitos fixos e aleatórios
-amostra0 <- coda.samples(
-    jagsmodel0, c("b0", "sigma", "u"),
-    n.iter = 10000, thin = 10,
-    n.chains = 3,
-    n.adapt = 1000)
-
-amostra0 <- as.mcmc(do.call(rbind, amostra0))
-
-```
-
-```{r}
-
-##-------------------------------------------
-## Resumos da posteriori
-resumo0 <- summary(amostra0)$statistics
-ranef.jags0 <- data.frame(ef = resumo0[-(1:3), 1], m = "jags0")
-
-resumo0[1:3, ]
-HPDinterval(amostra0)[1:3, ]
-
-```
 
 ```{r fitmcmc1, cache=FALSE, results="hide"}
 
@@ -367,55 +418,69 @@ data1 <- with(
 )
 
 jagsmodel1 <- jags.model(
-    "poisRE.modelo",
+    textConnection(poisRE1),
     data = data1,
     n.chains = 3,
     n.adapt = 1000
 )
 
 amostra1 <- coda.samples(
-    jagsmodel1, c("b0", "b1", "sigma"),
+    jagsmodel1, c("b0", "b1", "sigma", "u", "mu"),
     n.iter = 15000, thin = 15,
     n.chains = 3,
     n.adapt = 1000)
 
 ```
+
+Avaliação da cadeia
 
 ```{r}
 
 ##-------------------------------------------
 ## Avaliação das cadeias
-xyplot(amostra1, axis = axis.grid, aspect = "fill")
-densityplot(amostra1, axis = axis.grid, aspect = "fill")
-acfplot(amostra1, type = "h", axis = axis.grid, aspect = "fill")
+ampars1 <- select_pars(amostra1, pars = c("b0", "b1", "sigma"))
+
+xyplot(ampars1, axis = axis.grid, aspect = "fill")
+densityplot(ampars1, axis = axis.grid, aspect = "fill")
+acfplot(ampars1, type = "h", axis = axis.grid, aspect = "fill")
 
 ```
 
-```{r mcmc1, results="hide"}
+Resumos da posteriori
 
-##-------------------------------------------
-## Predição dos efeitos fixos e aleatórios
-amostra1 <- coda.samples(
-    jagsmodel1, c("b0", "b1", "sigma", "u"),
-    n.iter = 15000, thin = 15,
-    n.chains = 3,
-    n.adapt = 1000)
+```{r}
 
-amostra1 <- as.mcmc(do.call(rbind, amostra1))
+## Resumos da posteriori (para os parametros b0, b1 e sigma)
+
+ampars1 <- as.mcmc(do.call(rbind, ampars1))
+
+(resumo1 <- summary(ampars1)$statistics)
+HPDinterval(ampars1)
 
 ```
+
+Predição dos efeitos aleatórios
 
 ```{r}
 
 ##-------------------------------------------
-## Resumos da posteriori
-resumo1 <- summary(amostra1)$statistics
-ranef.jags1 <- data.frame(ef = resumo1[-(1:3), 1], m = "jags1")
+## Predição dos efeitos aleatórios
+amranef1 <- select_pars(amostra1, pars = "u")
+amranef1 <- as.mcmc(do.call(rbind, amranef1))
+ranef.jags1 <- data.frame(
+    ef = summary(amranef1)$statistics[, 1],
+    m = "jags1")
 
-resumo1[1:3, ]
-HPDinterval(amostra1)[1:3, ]
+qqmath(~ef, data = ranef.inlag1,
+       axis = axis.grid,
+       panel = function(...) {
+           panel.qqmath(...)
+           panel.qqmathline(..., lty = 2, col = "gray50")
+       })
 
 ```
+
+Comparando os efeitos aleatórios
 
 ```{r}
 
